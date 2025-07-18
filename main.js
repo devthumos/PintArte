@@ -2,7 +2,7 @@
 
 // --- ESTADO DO JOGO ---
 const gameState = {
-    money: 500,
+    money: 1000,
     reputation: 0,
     level: 'Aprendiz',
     contractsCompleted: 0,
@@ -78,7 +78,7 @@ function showFailureOptionsModal(message) {
     document.getElementById('new-contract-btn').onclick = () => {
         modal.classList.add('hidden');
         resetModalToDefault();
-        startNewContract(); // Gerar novo contrato imediatamente
+        showContractIntroScreen(); // Usar a tela de introdução em vez de contrato direto
     };
     
     document.getElementById('back-home-btn').onclick = () => {
@@ -336,6 +336,7 @@ function showStoreForShopping() {
 }
 
 function startNewContract() {
+    // Esta função agora é chamada apenas para contratos diretos (sem introdução)
     updatePlayerLevel();
     const availableContracts = contractsData.filter(c => c.level === gameState.level);
     const contractDetails = { ...availableContracts[Math.floor(Math.random() * availableContracts.length)] };
@@ -373,6 +374,223 @@ function startNewContract() {
         totalCost: 0
     };
     
+    setupContractScreen();
+    showScreen('contract-screen');
+}
+
+// --- TELA DE INTRODUÇÃO AO CONTRATO ---
+function showContractIntroScreen() {
+    // Preparar contrato primeiro
+    updatePlayerLevel();
+    const availableContracts = contractsData.filter(c => c.level === gameState.level);
+    const contractDetails = { ...availableContracts[Math.floor(Math.random() * availableContracts.length)] };
+
+    // Gerar dimensões aleatórias
+    switch (contractDetails.shape) {
+        case 'rectangle':
+            contractDetails.width = generateRandomValue(5, 15);
+            contractDetails.height = generateRandomValue(5, 10);
+            break;
+        case 'triangle':
+            contractDetails.base = generateRandomValue(6, 18);
+            contractDetails.height = generateRandomValue(5, 12);
+            break;
+        case 'circle':
+            contractDetails.radius = generateRandomValue(3, 8);
+            break;
+        case 'l-shape':
+            contractDetails.w1 = generateRandomValue(8, 15);
+            contractDetails.h1 = generateRandomValue(4, 6);
+            contractDetails.w2 = generateRandomValue(4, 6);
+            contractDetails.h2 = generateRandomValue(6, 10);
+            break;
+        case 'prism':
+            contractDetails.width = generateRandomValue(12, 18);
+            contractDetails.height = generateRandomValue(6, 10);
+            contractDetails.depth = generateRandomValue(3, 5);
+            break;
+    }
+
+    // Armazenar contrato temporariamente
+    window.tempContract = contractDetails;
+
+    // Preparar texto do contrato
+    const contractText = generateContractText(contractDetails);
+
+    // Mostrar tela com fade-in
+    showScreenWithFade('contract-intro-screen', () => {
+        // Iniciar vídeo
+        const video = document.getElementById('contract-video');
+        video.currentTime = 0;
+        video.play().catch(e => console.log('Vídeo não pôde ser reproduzido:', e));
+
+        // Mostrar caixa de diálogo após um delay
+        setTimeout(() => {
+            const dialog = document.getElementById('game-boy-dialog');
+            dialog.classList.add('show');
+
+            // Iniciar animação de texto após a caixa aparecer
+            setTimeout(() => {
+                typeText('dialog-text', contractText, () => {
+                    // Mostrar botões após o texto terminar
+                    setTimeout(() => {
+                        document.getElementById('dialog-buttons').style.opacity = '1';
+                        setupContractButtons();
+                    }, 500);
+                });
+            }, 300);
+        }, 800);
+    });
+}
+
+function generateContractText(contract) {
+    const clientMessages = {
+        "Sr. Jorge": "Olá! Sou o Sr. Jorge e preciso pintar uma parede da minha casa.",
+        "Dona Íris": "Oi querido! Sou a Dona Íris e tenho um projeto especial para você.",
+        "Arquiteta Lúcia": "Bom dia! Sou a Arquiteta Lúcia e tenho um projeto comercial.",
+        "Marceneiro Davi": "E aí! Sou o Marceneiro Davi e preciso de ajuda com uma peça.",
+        "Logística Global": "Olá! Representamos a Logística Global. Temos um projeto industrial."
+    };
+
+    const shapeDescriptions = {
+        "rectangle": "uma superfície retangular",
+        "triangle": "uma superfície triangular", 
+        "circle": "uma superfície circular",
+        "l-shape": "uma superfície em formato de L",
+        "prism": "um contêiner (todas as faces externas)"
+    };
+
+    const instructions = {
+        "rectangle": "Calcule a área: base × altura",
+        "triangle": "Calcule a área: (base × altura) ÷ 2", 
+        "circle": "Calcule a área: π × raio² (use π = 3.14)",
+        "l-shape": "Calcule a área total das duas partes",
+        "prism": "Calcule a área de superfície: 2(lw + lh + wh)"
+    };
+
+    return `${clientMessages[contract.client]}\n\n` +
+           `Projeto: ${contract.name}\n\n` +
+           `Preciso pintar ${shapeDescriptions[contract.shape]}.\n\n` +
+           `${instructions[contract.shape]}\n\n` +
+           `Recompensa: ${contract.reward} moedas\n\n` +
+           `Você aceita este trabalho?`;
+}
+
+function typeText(elementId, text, callback) {
+    const element = document.getElementById(elementId);
+    element.innerHTML = '';
+    element.classList.add('typing-cursor');
+    
+    let i = 0;
+    const typeInterval = setInterval(() => {
+        if (i < text.length) {
+            if (text[i] === '\n') {
+                element.innerHTML += '<br>';
+            } else {
+                element.innerHTML += text[i];
+            }
+            i++;
+            
+            // Som de digitação ocasional
+            if (i % 3 === 0) {
+                playClickSound();
+            }
+        } else {
+            element.classList.remove('typing-cursor');
+            clearInterval(typeInterval);
+            if (callback) callback();
+        }
+    }, 40); // Velocidade de digitação
+}
+
+function setupContractButtons() {
+    document.getElementById('accept-contract-btn').onclick = () => {
+        acceptContract();
+    };
+    
+    document.getElementById('decline-contract-btn').onclick = () => {
+        declineContract();
+    };
+}
+
+function acceptContract() {
+    // Usar o contrato temporário
+    currentContract = {
+        details: window.tempContract,
+        paints: [],
+        totalCoverage: 0,
+        totalCost: 0
+    };
+    
+    // Transição suave para a tela de contrato
+    hideScreenWithFade('contract-intro-screen', () => {
+        setupContractScreen();
+        showScreenWithFade('contract-screen');
+    });
+}
+
+function declineContract() {
+    // Voltar para a tela inicial
+    hideScreenWithFade('contract-intro-screen', () => {
+        showScreenWithFade('home-screen');
+    });
+}
+
+function showScreenWithFade(screenId, callback) {
+    // Esconder tela atual com fade-out
+    const currentScreen = document.querySelector('.screen.active');
+    if (currentScreen) {
+        currentScreen.classList.add('fade-transition', 'fade-out');
+        setTimeout(() => {
+            currentScreen.classList.remove('active', 'fade-transition', 'fade-out');
+            showNewScreen();
+        }, 600);
+    } else {
+        showNewScreen();
+    }
+    
+    function showNewScreen() {
+        const nextScreen = document.getElementById(screenId);
+        nextScreen.classList.add('fade-transition');
+        nextScreen.classList.add('active');
+        
+        setTimeout(() => {
+            nextScreen.style.opacity = '1';
+            if (callback) callback();
+        }, 50);
+        
+        // Remover classe de transição após animação
+        setTimeout(() => {
+            nextScreen.classList.remove('fade-transition');
+        }, 700);
+    }
+}
+
+function hideScreenWithFade(screenId, callback) {
+    const screen = document.getElementById(screenId);
+    screen.classList.add('fade-transition', 'fade-out');
+    
+    setTimeout(() => {
+        screen.classList.remove('active', 'fade-transition', 'fade-out');
+        
+        // Parar vídeo se existir
+        const video = screen.querySelector('video');
+        if (video) {
+            video.pause();
+        }
+        
+        // Reset do dialog
+        const dialog = document.getElementById('game-boy-dialog');
+        if (dialog) {
+            dialog.classList.remove('show');
+            document.getElementById('dialog-buttons').style.opacity = '0';
+        }
+        
+        if (callback) callback();
+    }, 600);
+}
+
+function setupContractScreen() {
     document.getElementById('contract-client').textContent = `CLIENTE: ${currentContract.details.client}`;
     document.getElementById('contract-project').textContent = `PROJETO: ${currentContract.details.name}`;
     document.getElementById('contract-reward').innerHTML = `RECOMPENSA: <i class="fas fa-coins text-yellow-500"></i> ${currentContract.details.reward}`;
@@ -397,7 +615,7 @@ function startNewContract() {
     areaInput.value = '';
     document.getElementById('contract-feedback').textContent = '';
     document.getElementById('paint-btn').disabled = true;
-    showScreen('contract-screen');
+    renderCart();
 }
 
 function addPaintToCart(paintId) {
@@ -426,7 +644,6 @@ function getCorrectArea() {
         case 'l-shape': return (d.w1 * d.h1) + (d.w2 * d.h2);
         case 'prism':
             // Área de superfície de um prisma retangular: 2(lw + lh + wh)
-            // Onde: l = width (largura), w = depth (profundidade), h = height (altura)
             const area1 = d.width * d.depth;  // Base superior e inferior
             const area2 = d.width * d.height; // Frente e trás
             const area3 = d.depth * d.height; // Laterais esquerda e direita
@@ -487,7 +704,7 @@ function checkAnswer() {
             // Jogador acertou! Toca o som de sucesso
             playSuccessSound();
             const profit = currentContract.details.reward - currentContract.totalCost;
-            feedbackMessage = `✅ <strong>Trabalho Concluído!</strong><br><br>A recompensa foi de ${currentContract.details.reward}, o custo da tinta foi ${currentContract.totalCost}.<br>Lucro de: ${profit} moedas. <br>+10 de reputação.`;
+            feedbackMessage = `✅ <strong>Trabalho Concluído!</strong><br><br>A recompensa foi de ${currentContract.details.reward}, o custo da tinta foi ${currentContract.totalCost}.<br>Lucro de: ${profit} moedas. <br>+10 de reputação.<br><br>🎯 <strong>Próximo contrato chegando...</strong>`;
             gameState.money += currentContract.details.reward;
             gameState.reputation += 10;
             gameState.contractsCompleted++;
@@ -495,7 +712,7 @@ function checkAnswer() {
             currentContract = null; // Finaliza o contrato
             updatePlayerLevel();
             updateStatusDisplay();
-            showFeedbackModal(feedbackMessage, "Continuar", () => showScreen('home-screen'));
+            showFeedbackModal(feedbackMessage, "Próximo Contrato", () => showContractIntroScreen());
         }
     }
 }

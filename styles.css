@@ -246,3 +246,62 @@ input[type=number] {
         transform: translateY(0px) scale(1);
     }
 }
+
+/* Tela de Introdução ao Contrato - Estilo Game Boy */
+#contract-intro-screen {
+    opacity: 0;
+    transition: opacity 800ms ease-in-out;
+}
+
+#contract-intro-screen.active {
+    opacity: 1;
+}
+
+#contract-video {
+    filter: brightness(0.7) contrast(1.1) saturate(0.9);
+}
+
+#game-boy-dialog {
+    border-style: solid;
+    border-image: linear-gradient(45deg, #e0e0e0, #a0a0a0) 1;
+    box-shadow: 
+        0 0 0 2px #606060,
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+#game-boy-dialog.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#dialog-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-style: inset;
+}
+
+/* Cursor piscante para texto em digitação */
+.typing-cursor::after {
+    content: '▌';
+    animation: blink 1s infinite;
+    color: #00ff00;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Animação de fade para transições de tela */
+.fade-transition {
+    transition: opacity 600ms ease-in-out, transform 600ms ease-in-out;
+}
+
+.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+}
