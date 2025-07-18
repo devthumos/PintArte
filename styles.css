@@ -93,8 +93,8 @@ input[type=number] {
     filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
     transform: scale(0.8);
     transition: all 1000ms ease-in-out;
-    max-width: 300px;
-    max-height: 200px;
+    max-width: 420px;
+    max-height: 280px;
 }
 
 #publisher-logo.fade-in {
