@@ -53,6 +53,15 @@ main {
     background-color: #3eeC82; 
 }
 
+.btn-blue {
+    background-color: #3498db;
+    border-bottom-color: #2980b9;
+}
+
+.btn-blue:hover:not(:disabled) { 
+    background-color: #4fa8e5; 
+}
+
 .btn-red {
     background-color: #e74c3c;
     border-bottom-color: #c0392b;

@@ -17,6 +17,7 @@
             <h1 class="text-2xl font-bold text-yellow-400">PINTARTE</h1>
             <div class="flex items-center space-x-6 text-xl">
                 <div id="money-display"><i class="fas fa-coins text-yellow-400"></i> 500</div>
+                <div id="inventory-display"><i class="fas fa-paint-brush text-blue-400"></i> 0</div>
                 <div id="reputation-display"><i class="fas fa-star text-yellow-400"></i> 0</div>
                 <button id="music-toggle" onclick="toggleMusic()" class="text-yellow-400 hover:text-yellow-300 transition-colors">
                     <i id="music-icon" class="fas fa-volume-up"></i>
@@ -74,7 +75,7 @@
                 <!-- Navegação com botões animados -->
                 <nav class="flex flex-col md:flex-row items-center justify-center gap-6">
                     <button id="btn-contract" onclick="showContractIntroScreen()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">NOVO CONTRATO</button>
-                    <button id="btn-store" onclick="showStoreForShopping()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">LOJA</button>
+                    <button id="btn-store" onclick="showStoreForShopping()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">INVENTÁRIO</button>
                     <button id="btn-reputation" onclick="showScreen('reputation-screen')" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">REPUTAÇÃO</button>
                 </nav>
             </div>

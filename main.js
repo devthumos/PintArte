@@ -6,6 +6,13 @@ const gameState = {
     reputation: 0,
     level: 'Aprendiz',
     contractsCompleted: 0,
+    inventory: {
+        1: 0, // Tinta P
+        2: 0, // Tinta M  
+        3: 0, // Tinta G
+        4: 0, // Tinta GG
+        5: 0  // Tinta PP
+    }
 };
 
 // --- ESTADO DO CONTRATO ATUAL ---
@@ -13,11 +20,11 @@ let currentContract = null;
 
 // --- DADOS DO JOGO ---
 const contractsData = [
-    { level: 'Aprendiz', name: "Parede Retangular", client: "Sr. Jorge", shape: 'rectangle', reward: 250, penalty: 10 },
-    { level: 'Aprendiz', name: "Muro Triangular", client: "Dona Íris", shape: 'triangle', reward: 200, penalty: 15 },
-    { level: 'Pintor', name: "Piso em L", client: "Arquiteta Lúcia", shape: 'l-shape', reward: 650, penalty: 25 },
-    { level: 'Pintor', name: "Tampo de Mesa Redondo", client: "Marceneiro Davi", shape: 'circle', reward: 700, penalty: 30 },
-    { level: 'Mestre', name: "Pintar Contêiner", client: "Logística Global", shape: 'prism', reward: 1700, penalty: 50 },
+    { level: 'Aprendiz', name: "Parede Retangular", client: "Sr. Jorge", shape: 'rectangle', reward: 350, penalty: 10 },
+    { level: 'Aprendiz', name: "Muro Triangular", client: "Dona Íris", shape: 'triangle', reward: 300, penalty: 15 },
+    { level: 'Pintor', name: "Piso em L", client: "Arquiteta Lúcia", shape: 'l-shape', reward: 750, penalty: 25 },
+    { level: 'Pintor', name: "Tampo de Mesa Redondo", client: "Marceneiro Davi", shape: 'circle', reward: 900, penalty: 30 },
+    { level: 'Mestre', name: "Pintar Contêiner", client: "Logística Global", shape: 'prism', reward: 1900, penalty: 50 },
 ];
 
 const paints = [
@@ -103,26 +110,74 @@ function resetModalToDefault() {
 function updateStatusDisplay() {
     moneyDisplay.innerHTML = `<i class="fas fa-coins text-yellow-400"></i> ${gameState.money}`;
     reputationDisplay.innerHTML = `<i class="fas fa-star text-yellow-400"></i> ${gameState.reputation}`;
+    
+    // Atualizar display do inventário se existir
+    const inventoryDisplay = document.getElementById('inventory-display');
+    if (inventoryDisplay) {
+        const totalPaints = Object.values(gameState.inventory).reduce((sum, qty) => sum + qty, 0);
+        inventoryDisplay.innerHTML = `<i class="fas fa-paint-brush text-blue-400"></i> ${totalPaints}`;
+    }
 }
 
-function renderStore(isForContract) {
+function renderStore(mode, currentContract = null) {
     const storeContainer = document.getElementById('store-items');
     const storeFooter = document.getElementById('store-footer');
+    const storeTitle = document.querySelector('#store-screen h2');
+    
     storeContainer.innerHTML = '';
+    
+    // Definir título e instruções baseado no modo
+    if (mode === 'contract') {
+        storeTitle.textContent = 'Loja de Tintas - Contrato Ativo';
+    } else {
+        storeTitle.textContent = 'Loja de Tintas - Inventário Geral';
+    }
     
     paints.forEach(paint => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'bg-gray-200 p-4 rounded-lg text-center text-black space-y-2 flex flex-col justify-between';
-        const buttonAction = isForContract ? `addPaintToCart(${paint.id})` : `buyPaint(${paint.id})`;
-        const buttonText = isForContract ? 'Adicionar' : 'Comprar (WIP)';
+        
+        // Mostrar quantidade no inventário
+        const inventoryQty = gameState.inventory[paint.id] || 0;
+        const inventoryInfo = inventoryQty > 0 ? `<p class="text-xs text-blue-600">Em estoque: ${inventoryQty}</p>` : '';
+        
+        let buttonContent = '';
+        if (mode === 'contract') {
+            // Modo contrato: opções para usar do estoque ou comprar nova
+            if (inventoryQty > 0) {
+                buttonContent = `
+                    <button onclick="useFromInventory(${paint.id})" class="btn btn-blue w-full mt-1 py-2 rounded-lg text-sm">
+                        📦 Usar do Estoque
+                    </button>
+                    <button onclick="buyPaintForContract(${paint.id})" class="btn btn-green w-full mt-1 py-2 rounded-lg text-sm">
+                        💰 Comprar Nova
+                    </button>
+                `;
+            } else {
+                buttonContent = `
+                    <button onclick="buyPaintForContract(${paint.id})" class="btn btn-green w-full mt-1 py-2 rounded-lg text-sm">
+                        💰 Comprar Nova
+                    </button>
+                `;
+            }
+        } else {
+            // Modo inventário geral: só comprar para estoque
+            buttonContent = `
+                <button onclick="buyPaintForInventory(${paint.id})" class="btn btn-green w-full mt-2 py-2 rounded-lg text-md">
+                    🛒 Comprar para Estoque
+                </button>
+            `;
+        }
+        
         itemDiv.innerHTML = `
             <div>
                 <p class="font-bold text-lg">${paint.name}</p>
                 <p class="text-md">Cobre: ${paint.coverage}m²</p>
+                ${inventoryInfo}
             </div>
             <div class="mt-4">
                  <p class="font-bold text-xl"><i class="fas fa-coins text-yellow-600"></i> ${paint.price}</p>
-                 <button onclick="${buttonAction}" class="btn btn-green w-full mt-2 py-2 rounded-lg text-md">${buttonText}</button>
+                 ${buttonContent}
             </div>
         `;
         storeContainer.appendChild(itemDiv);
@@ -130,20 +185,39 @@ function renderStore(isForContract) {
 
     const backButton = document.createElement('button');
     backButton.className = 'btn w-1/2 md:w-1/4 text-xl py-3 rounded-lg';
-    backButton.textContent = isForContract ? 'Voltar ao Contrato' : 'Voltar ao Menu';
-    backButton.onclick = () => showScreen(isForContract ? 'contract-screen' : 'home-screen');
+    backButton.textContent = mode === 'contract' ? 'Voltar ao Contrato' : 'Voltar ao Menu';
+    backButton.onclick = () => showScreen(mode === 'contract' ? 'contract-screen' : 'home-screen');
     storeFooter.innerHTML = '';
     storeFooter.appendChild(backButton);
 }
 
 function renderReputation() {
     const reputationContainer = document.getElementById('reputation-details');
+    
+    // Calcular estatísticas do inventário
+    const inventoryItems = [];
+    let totalInventoryValue = 0;
+    
+    paints.forEach(paint => {
+        const qty = gameState.inventory[paint.id] || 0;
+        if (qty > 0) {
+            inventoryItems.push(`${paint.name}: ${qty}x`);
+            totalInventoryValue += qty * paint.price;
+        }
+    });
+    
+    const inventoryText = inventoryItems.length > 0 
+        ? inventoryItems.join(', ') 
+        : 'Inventário vazio';
+    
     reputationContainer.innerHTML = `
         <p>Título: <span class="font-bold text-yellow-300">${gameState.level}</span></p>
         <p>Contratos Concluídos: <span class="font-bold">${gameState.contractsCompleted}</span></p>
         <p>Reputação: <span class="font-bold">${gameState.reputation}</span></p>
         <hr class="border-gray-500 my-4">
         <p><i class="fas fa-coins text-yellow-400"></i> Moedas: <span class="font-bold">${gameState.money}</span></p>
+        <p><i class="fas fa-paint-brush text-blue-400"></i> Tintas em Estoque: <span class="font-bold text-blue-300">${inventoryText}</span></p>
+        <p class="text-sm text-gray-400">Valor do Inventário: ${totalInventoryValue} moedas</p>
     `;
 }
 
@@ -292,8 +366,35 @@ function renderCart() {
         return;
     }
 
+    // Agrupar tintas iguais e mostrar origem
+    const paintGroups = {};
     currentContract.paints.forEach(paint => {
-        cartItemsContainer.innerHTML += `<p class="text-sm">- ${paint.name} (${paint.coverage}m²)</p>`;
+        if (!paintGroups[paint.id]) {
+            paintGroups[paint.id] = {
+                paint: paint,
+                fromInventory: 0,
+                bought: 0
+            };
+        }
+    });
+
+    // Contar origem das tintas (simulado - em implementação real seria rastreado)
+    currentContract.paints.forEach(paint => {
+        paintGroups[paint.id].bought++;
+    });
+
+    Object.values(paintGroups).forEach(group => {
+        const total = group.fromInventory + group.bought;
+        let originText = '';
+        if (group.fromInventory > 0 && group.bought > 0) {
+            originText = ` (${group.fromInventory} do estoque, ${group.bought} compradas)`;
+        } else if (group.fromInventory > 0) {
+            originText = ` (do estoque)`;
+        } else {
+            originText = ` (compradas)`;
+        }
+        
+        cartItemsContainer.innerHTML += `<p class="text-sm">- ${group.paint.name} x${total} (${group.paint.coverage * total}m²)${originText}</p>`;
     });
 
     cartSummaryContainer.innerHTML = `
@@ -326,12 +427,12 @@ function showScreen(screenId) {
 }
 
 function showStoreForContract() {
-    renderStore(true);
+    renderStore('contract', currentContract);
     showScreen('store-screen');
 }
 
 function showStoreForShopping() {
-    renderStore(false);
+    renderStore('inventory');
     showScreen('store-screen');
 }
 
@@ -619,11 +720,41 @@ function setupContractScreen() {
 }
 
 function addPaintToCart(paintId) {
+    // Esta função foi substituída por buyPaintForContract e useFromInventory
+    // Mantida para compatibilidade, mas redireciona para a nova função
+    buyPaintForContract(paintId);
+}
+
+// --- FUNÇÕES DO SISTEMA DE INVENTÁRIO ---
+function buyPaintForInventory(paintId) {
     const paint = paints.find(p => p.id === paintId);
     if (gameState.money < paint.price) {
-        showFeedbackModal("Dinheiro insuficiente!");
+        showFeedbackModal("💰 Dinheiro insuficiente para comprar esta tinta!");
         return;
     }
+    
+    gameState.money -= paint.price;
+    gameState.inventory[paint.id] = (gameState.inventory[paint.id] || 0) + 1;
+    
+    updateStatusDisplay();
+    showFeedbackModal(`🛒 ${paint.name} adicionada ao seu inventário!`, "OK", () => {
+        // Atualizar a loja para mostrar a nova quantidade
+        renderStore('inventory');
+    });
+}
+
+function buyPaintForContract(paintId) {
+    const paint = paints.find(p => p.id === paintId);
+    if (gameState.money < paint.price) {
+        showFeedbackModal("💰 Dinheiro insuficiente para comprar esta tinta!");
+        return;
+    }
+    
+    if (!currentContract) {
+        showFeedbackModal("❌ Nenhum contrato ativo!");
+        return;
+    }
+    
     gameState.money -= paint.price;
     currentContract.paints.push(paint);
     currentContract.totalCoverage += paint.coverage;
@@ -631,7 +762,40 @@ function addPaintToCart(paintId) {
     
     document.getElementById('paint-btn').disabled = false;
     updateStatusDisplay();
-    showFeedbackModal(`${paint.name} adicionada ao projeto!`);
+    showFeedbackModal(`💰 ${paint.name} comprada e adicionada ao projeto!`, "OK", () => {
+        // Atualizar a loja para mostrar as mudanças
+        renderStore('contract', currentContract);
+    });
+}
+
+function useFromInventory(paintId) {
+    const paint = paints.find(p => p.id === paintId);
+    const inventoryQty = gameState.inventory[paint.id] || 0;
+    
+    if (inventoryQty <= 0) {
+        showFeedbackModal("📦 Você não tem esta tinta em estoque!");
+        return;
+    }
+    
+    if (!currentContract) {
+        showFeedbackModal("❌ Nenhum contrato ativo!");
+        return;
+    }
+    
+    // Remover do inventário
+    gameState.inventory[paint.id]--;
+    
+    // Adicionar ao contrato (sem custo adicional)
+    currentContract.paints.push(paint);
+    currentContract.totalCoverage += paint.coverage;
+    // Não adiciona ao custo total pois já foi pago antes
+    
+    document.getElementById('paint-btn').disabled = false;
+    updateStatusDisplay();
+    showFeedbackModal(`📦 ${paint.name} retirada do estoque e adicionada ao projeto!`, "OK", () => {
+        // Atualizar a loja para mostrar as mudanças
+        renderStore('contract', currentContract);
+    });
 }
 
 function getCorrectArea() {
