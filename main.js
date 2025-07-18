@@ -634,6 +634,9 @@ function initializeGame() {
     showScreen('home-screen');
     initBackgroundMusic();
     
+    // Iniciar animações da tela inicial
+    startHomeScreenAnimations();
+    
     // Adiciona som de clique para todos os cliques do mouse esquerdo
     document.addEventListener('click', (event) => {
         // Verifica se é o botão esquerdo do mouse (button 0)
@@ -641,4 +644,36 @@ function initializeGame() {
             playClickSound();
         }
     });
+}
+
+// --- ANIMAÇÕES DA TELA INICIAL ---
+function startHomeScreenAnimations() {
+    const bgVideo = document.getElementById('bg-video');
+    const gameLogo = document.getElementById('game-logo');
+    const btnContract = document.getElementById('btn-contract');
+    const btnStore = document.getElementById('btn-store');
+    const btnReputation = document.getElementById('btn-reputation');
+    
+    // Fazer fade-in do vídeo de fundo primeiro
+    setTimeout(() => {
+        bgVideo.style.opacity = '1';
+    }, 100);
+    
+    // Animar logo do jogo
+    setTimeout(() => {
+        gameLogo.classList.add('fade-in-logo');
+    }, 800);
+    
+    // Animar botões sequencialmente
+    setTimeout(() => {
+        btnContract.classList.add('fade-in-button');
+    }, 1500);
+    
+    setTimeout(() => {
+        btnStore.classList.add('fade-in-button');
+    }, 1700);
+    
+    setTimeout(() => {
+        btnReputation.classList.add('fade-in-button');
+    }, 1900);
 }

@@ -6,6 +6,19 @@ body {
     background-image: url('https://www.transparenttextures.com/patterns/concrete-wall.png');
     color: #f0f0f0;
     line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Garantir que não haja scroll na tela inicial */
+#home-screen.active {
+    overflow: hidden;
+}
+
+main {
+    margin: 0;
+    padding: 0;
 }
 
 .btn {
@@ -73,6 +86,82 @@ input[type=number] {
     text-shadow: none;
 }
 
+/* Tela inicial com vídeo */
+#home-screen {
+    position: relative;
+    height: calc(100vh - 80px); /* Subtraindo a altura aproximada do header */
+    overflow: hidden;
+}
+
+.home-content {
+    height: calc(100vh - 80px); /* Altura da tela menos o header */
+}
+
+#bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    filter: brightness(0.7) contrast(1.1) saturate(1.2);
+    transition: opacity 2000ms ease-in-out;
+    /* Garantir cobertura total */
+    min-width: 100%;
+    min-height: 100%;
+}
+
+#bg-video.fade-in {
+    opacity: 1 !important;
+}
+
+/* Logo flutuante */
+.floating-logo {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Animações dos botões */
+.btn-fade-in {
+    animation: fadeInUp 800ms ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Logo do jogo */
+#game-logo.fade-in {
+    animation: logoFadeIn 1000ms ease-out forwards;
+}
+
+@keyframes logoFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Controles de áudio */
 #music-toggle {
     transition: color 0.3s ease;
@@ -105,4 +194,55 @@ input[type=number] {
 #publisher-logo.fade-out {
     opacity: 0 !important;
     transform: scale(0.9);
+}
+
+/* Tela Inicial com Vídeo */
+#bg-video {
+    filter: brightness(0.9) contrast(1.1) saturate(1.2);
+    transition: opacity 2000ms ease-in-out;
+}
+
+.floating-logo {
+    animation: float 4s ease-in-out infinite;
+    animation-fill-mode: forwards;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+/* Animações de fade-in */
+.fade-in-logo {
+    animation: fadeInLogo 2s ease-out forwards;
+}
+
+.fade-in-button {
+    animation: fadeInButton 1s ease-out forwards;
+}
+
+@keyframes fadeInLogo {
+    0% {
+        opacity: 0;
+        transform: translateY(50px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+    }
+}
+
+@keyframes fadeInButton {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+    }
 }

@@ -49,7 +49,7 @@
         Seu navegador não suporta o elemento de áudio.
     </audio>
 
-    <main class="mt-8">
+    <main>
         <!-- Splash Screen -->
         <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-50">
             <img id="publisher-logo" src="assets/img/logo-unb.png" alt="Publisher Logo" class="max-w-md max-h-50 opacity-0 transition-opacity duration-1000">
@@ -57,14 +57,26 @@
 
         <!-- Tela Inicial -->
         <div id="home-screen" class="screen">
-             <div class="text-center p-4">
-                 <h2 class="text-6xl md:text-8xl text-white font-bold" style="text-shadow: 5px 5px #000;">EMPRESA</h2>
-                 <h3 class="text-6xl md:text-8xl text-yellow-400 font-bold" style="text-shadow: 5px 5px #c7861b;">PINTARTE</h3>
-                 <nav class="mt-12 flex flex-col md:flex-row items-center justify-center gap-6">
-                    <button onclick="startNewContract()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg">NOVO CONTRATO</button>
-                    <button onclick="showStoreForShopping()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg">LOJA</button>
-                    <button onclick="showScreen('reputation-screen')" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg">REPUTAÇÃO</button>
-                 </nav>
+            <!-- Vídeo de fundo -->
+            <video id="bg-video" autoplay muted loop class="fixed inset-0 w-full h-full object-cover z-0 opacity-0">
+                <source src="assets/videos/bg-main.mp4" type="video/mp4">
+                Seu navegador não suporta o elemento de vídeo.
+            </video>
+            
+            <!-- Conteúdo da tela inicial -->
+            <div class="relative z-20 text-center p-4 home-content flex flex-col justify-center">
+                <!-- Logo do jogo -->
+                <div id="game-logo" class="opacity-0 mb-8">
+                    <h2 class="text-6xl md:text-8xl text-white font-bold floating-logo" style="text-shadow: 5px 5px #000;">EMPRESA</h2>
+                    <h3 class="text-6xl md:text-8xl text-yellow-400 font-bold floating-logo" style="text-shadow: 5px 5px #c7861b;">PINTARTE</h3>
+                </div>
+                
+                <!-- Navegação com botões animados -->
+                <nav class="flex flex-col md:flex-row items-center justify-center gap-6">
+                    <button id="btn-contract" onclick="startNewContract()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">NOVO CONTRATO</button>
+                    <button id="btn-store" onclick="showStoreForShopping()" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">LOJA</button>
+                    <button id="btn-reputation" onclick="showScreen('reputation-screen')" class="btn w-full md:w-auto text-2xl font-bold py-4 px-8 rounded-lg opacity-0">REPUTAÇÃO</button>
+                </nav>
             </div>
         </div>
 
