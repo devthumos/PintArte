@@ -20,11 +20,26 @@ let currentContract = null;
 
 // --- DADOS DO JOGO ---
 const contractsData = [
+    // APRENDIZ
     { level: 'Aprendiz', name: "Parede Retangular", client: "Sr. Jorge", shape: 'rectangle', reward: 350, penalty: 10 },
     { level: 'Aprendiz', name: "Muro Triangular", client: "Dona Íris", shape: 'triangle', reward: 300, penalty: 15 },
+    { level: 'Aprendiz', name: "Telhado Trapezoidal", client: "Construtora Silva", shape: 'trapezoid', reward: 400, penalty: 12 },
+    
+    // PINTOR
     { level: 'Pintor', name: "Piso em L", client: "Arquiteta Lúcia", shape: 'l-shape', reward: 750, penalty: 25 },
     { level: 'Pintor', name: "Tampo de Mesa Redondo", client: "Marceneiro Davi", shape: 'circle', reward: 900, penalty: 30 },
+    { level: 'Pintor', name: "Piso Inclinado", client: "Designer Ana", shape: 'parallelogram', reward: 650, penalty: 20 },
+    { level: 'Pintor', name: "Logo da Empresa", client: "Agência Criativa", shape: 'rhombus', reward: 550, penalty: 18 },
+    { level: 'Pintor', name: "Corredor em T", client: "Shopping Plaza", shape: 't-shape', reward: 850, penalty: 28 },
+    { level: 'Pintor', name: "Pátio em U", client: "Escola Municipal", shape: 'u-shape', reward: 950, penalty: 32 },
+    
+    // MESTRE
     { level: 'Mestre', name: "Pintar Contêiner", client: "Logística Global", shape: 'prism', reward: 1900, penalty: 50 },
+    { level: 'Mestre', name: "Piso Hexagonal", client: "Arquiteta Moderna", shape: 'hexagon', reward: 1200, penalty: 40 },
+    { level: 'Mestre', name: "Quadra Setorizada", client: "Clube Esportivo", shape: 'sector', reward: 1400, penalty: 45 },
+    { level: 'Mestre', name: "Tanque Cilíndrico", client: "Saneamento S.A.", shape: 'cylinder', reward: 2200, penalty: 60 },
+    { level: 'Mestre', name: "Monumento Piramidal", client: "Prefeitura", shape: 'pyramid', reward: 2500, penalty: 70 },
+    { level: 'Mestre', name: "Contêiner Cúbico", client: "Transportes XYZ", shape: 'cube', reward: 1800, penalty: 55 },
 ];
 
 const paints = [
@@ -337,8 +352,178 @@ function renderShape(contract) {
         case 'triangle':
             container.innerHTML = `<div style="width: 0; height: 0; border-left: ${d.base * 5}px solid transparent; border-right: ${d.base * 5}px solid transparent; border-bottom: ${d.height * 10}px solid #60a5fa;"></div>`;
             break;
+        case 'trapezoid':
+            const trapezoidScale = 8;
+            container.innerHTML = `
+                <div style="position: relative; width: ${d.baseMaior * trapezoidScale}px; height: ${d.height * trapezoidScale}px;">
+                    <div style="
+                        width: 0; 
+                        height: 0; 
+                        border-bottom: ${d.height * trapezoidScale}px solid #f59e0b;
+                        border-left: ${(d.baseMaior - d.baseMenor) * trapezoidScale / 2}px solid transparent;
+                        border-right: ${(d.baseMaior - d.baseMenor) * trapezoidScale / 2}px solid transparent;
+                        position: relative;
+                    "></div>
+                    <div style="
+                        position: absolute; 
+                        bottom: 0; 
+                        left: ${(d.baseMaior - d.baseMenor) * trapezoidScale / 2}px;
+                        width: ${d.baseMenor * trapezoidScale}px; 
+                        height: ${d.height * trapezoidScale}px; 
+                        background-color: #f59e0b;
+                    "></div>
+                </div>
+            `;
+            break;
         case 'circle':
             container.innerHTML = `<div class="bg-green-400 rounded-full" style="width: ${d.radius * 20}px; height: ${d.radius * 20}px;"></div>`;
+            break;
+        case 'parallelogram':
+            container.innerHTML = `
+                <div style="
+                    width: ${d.base * 8}px; 
+                    height: ${d.height * 8}px; 
+                    background-color: #10b981; 
+                    transform: skew(-20deg);
+                "></div>
+            `;
+            break;
+        case 'rhombus':
+            const rhombusSize = Math.max(d.diagonal1, d.diagonal2) * 6;
+            container.innerHTML = `
+                <div style="
+                    width: ${rhombusSize}px; 
+                    height: ${rhombusSize}px; 
+                    background-color: #8b5cf6; 
+                    transform: rotate(45deg);
+                "></div>
+            `;
+            break;
+        case 't-shape':
+            container.style.alignItems = 'flex-start';
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="bg-red-500" style="width: ${d.w1 * 8}px; height: ${d.h1 * 8}px;"></div>
+                    <div class="bg-red-500" style="width: ${d.w2 * 8}px; height: ${d.h2 * 8}px;"></div>
+                </div>
+            `;
+            break;
+        case 'u-shape':
+            container.style.alignItems = 'flex-start';
+            const uScale = 6;
+            container.innerHTML = `
+                <div style="position: relative;">
+                    <div class="bg-indigo-500" style="width: ${d.wTotal * uScale}px; height: ${d.hTotal * uScale}px;"></div>
+                    <div style="
+                        position: absolute; 
+                        top: 0; 
+                        left: ${((d.wTotal - d.wRecorte) / 2) * uScale}px;
+                        width: ${d.wRecorte * uScale}px; 
+                        height: ${d.hRecorte * uScale}px; 
+                        background-color: white;
+                    "></div>
+                </div>
+            `;
+            break;
+        case 'hexagon':
+            const hexSize = d.side * 8;
+            container.innerHTML = `
+                <div style="
+                    width: ${hexSize}px; 
+                    height: ${hexSize * 0.866}px; 
+                    background-color: #06b6d4;
+                    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+                "></div>
+            `;
+            break;
+        case 'sector':
+            const sectorSize = d.radius * 12;
+            container.innerHTML = `
+                <div style="
+                    width: ${sectorSize}px; 
+                    height: ${sectorSize}px; 
+                    background: conic-gradient(from 0deg, #fbbf24 0deg ${d.angle}deg, transparent ${d.angle}deg 360deg);
+                    border-radius: 50%;
+                "></div>
+            `;
+            break;
+        case 'cylinder':
+            const cylScale = 8;
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="
+                        width: ${d.radius * 2 * cylScale}px; 
+                        height: ${d.radius * cylScale / 2}px; 
+                        background-color: #ec4899; 
+                        border-radius: 50%;
+                    "></div>
+                    <div style="
+                        width: ${d.radius * 2 * cylScale}px; 
+                        height: ${d.height * cylScale}px; 
+                        background: linear-gradient(to right, #ec4899, #be185d, #ec4899);
+                    "></div>
+                    <div style="
+                        width: ${d.radius * 2 * cylScale}px; 
+                        height: ${d.radius * cylScale / 2}px; 
+                        background-color: #ec4899; 
+                        border-radius: 50%;
+                    "></div>
+                </div>
+            `;
+            break;
+        case 'pyramid':
+            const pyrScale = 6;
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="
+                        width: 0; 
+                        height: 0; 
+                        border-left: ${d.baseWidth * pyrScale / 2}px solid transparent; 
+                        border-right: ${d.baseWidth * pyrScale / 2}px solid transparent; 
+                        border-bottom: ${d.pyramidHeight * pyrScale}px solid #f97316;
+                    "></div>
+                    <div style="
+                        width: ${d.baseWidth * pyrScale}px; 
+                        height: ${d.baseHeight * pyrScale / 3}px; 
+                        background-color: #ea580c;
+                    "></div>
+                </div>
+            `;
+            break;
+        case 'cube':
+            const cubeScale = 8;
+            container.innerHTML = `
+                <div style="position: relative; transform: perspective(200px) rotateX(15deg) rotateY(15deg);">
+                    <!-- Face frontal -->
+                    <div style="
+                        width: ${d.side * cubeScale}px; 
+                        height: ${d.side * cubeScale}px; 
+                        background-color: #ef4444;
+                    "></div>
+                    <!-- Face superior -->
+                    <div style="
+                        position: absolute; 
+                        top: -${d.side * cubeScale / 4}px; 
+                        left: ${d.side * cubeScale / 4}px;
+                        width: ${d.side * cubeScale}px; 
+                        height: ${d.side * cubeScale}px; 
+                        background-color: #dc2626;
+                        transform: rotateX(90deg) rotateY(0deg);
+                        transform-origin: bottom;
+                    "></div>
+                    <!-- Face lateral -->
+                    <div style="
+                        position: absolute; 
+                        top: 0; 
+                        left: ${d.side * cubeScale}px;
+                        width: ${d.side * cubeScale}px; 
+                        height: ${d.side * cubeScale}px; 
+                        background-color: #b91c1c;
+                        transform: rotateY(90deg);
+                        transform-origin: left;
+                    "></div>
+                </div>
+            `;
             break;
         case 'l-shape':
             container.style.alignItems = 'flex-start';
@@ -452,8 +637,52 @@ function startNewContract() {
             contractDetails.base = generateRandomValue(6, 18);
             contractDetails.height = generateRandomValue(5, 12);
             break;
+        case 'trapezoid':
+            contractDetails.baseMaior = generateRandomValue(8, 16);
+            contractDetails.baseMenor = generateRandomValue(4, 8);
+            contractDetails.height = generateRandomValue(4, 8);
+            break;
         case 'circle':
             contractDetails.radius = generateRandomValue(3, 8);
+            break;
+        case 'parallelogram':
+            contractDetails.base = generateRandomValue(8, 15);
+            contractDetails.height = generateRandomValue(5, 12);
+            break;
+        case 'rhombus':
+            contractDetails.diagonal1 = generateRandomValue(6, 14);
+            contractDetails.diagonal2 = generateRandomValue(8, 16);
+            break;
+        case 't-shape':
+            contractDetails.w1 = generateRandomValue(10, 18);
+            contractDetails.h1 = generateRandomValue(3, 6);
+            contractDetails.w2 = generateRandomValue(4, 8);
+            contractDetails.h2 = generateRandomValue(8, 14);
+            break;
+        case 'u-shape':
+            contractDetails.wTotal = generateRandomValue(12, 20);
+            contractDetails.hTotal = generateRandomValue(8, 14);
+            contractDetails.wRecorte = generateRandomValue(6, 10);
+            contractDetails.hRecorte = generateRandomValue(4, 8);
+            break;
+        case 'hexagon':
+            contractDetails.side = generateRandomValue(4, 8);
+            break;
+        case 'sector':
+            contractDetails.radius = generateRandomValue(6, 12);
+            contractDetails.angle = generateRandomValue(45, 180);
+            break;
+        case 'cylinder':
+            contractDetails.radius = generateRandomValue(3, 8);
+            contractDetails.height = generateRandomValue(6, 12);
+            break;
+        case 'pyramid':
+            contractDetails.baseWidth = generateRandomValue(8, 16);
+            contractDetails.baseHeight = generateRandomValue(8, 16);
+            contractDetails.pyramidHeight = generateRandomValue(6, 12);
+            break;
+        case 'cube':
+            contractDetails.side = generateRandomValue(5, 12);
             break;
         case 'l-shape':
             contractDetails.w1 = generateRandomValue(8, 15);
@@ -496,8 +725,21 @@ function showContractIntroScreen() {
             contractDetails.base = generateRandomValue(6, 18);
             contractDetails.height = generateRandomValue(5, 12);
             break;
+        case 'trapezoid':
+            contractDetails.baseMaior = generateRandomValue(8, 16);
+            contractDetails.baseMenor = generateRandomValue(4, 8);
+            contractDetails.height = generateRandomValue(4, 8);
+            break;
         case 'circle':
             contractDetails.radius = generateRandomValue(3, 8);
+            break;
+        case 'parallelogram':
+            contractDetails.base = generateRandomValue(6, 14);
+            contractDetails.height = generateRandomValue(4, 9);
+            break;
+        case 'rhombus':
+            contractDetails.diagonal1 = generateRandomValue(6, 12);
+            contractDetails.diagonal2 = generateRandomValue(4, 10);
             break;
         case 'l-shape':
             contractDetails.w1 = generateRandomValue(8, 15);
@@ -505,10 +747,41 @@ function showContractIntroScreen() {
             contractDetails.w2 = generateRandomValue(4, 6);
             contractDetails.h2 = generateRandomValue(6, 10);
             break;
+        case 't-shape':
+            contractDetails.w1 = generateRandomValue(8, 14); // parte horizontal
+            contractDetails.h1 = generateRandomValue(3, 5);
+            contractDetails.w2 = generateRandomValue(3, 6);  // parte vertical
+            contractDetails.h2 = generateRandomValue(6, 10);
+            break;
+        case 'u-shape':
+            contractDetails.wTotal = generateRandomValue(10, 16);
+            contractDetails.hTotal = generateRandomValue(8, 12);
+            contractDetails.wRecorte = generateRandomValue(4, 8);
+            contractDetails.hRecorte = generateRandomValue(4, 6);
+            break;
+        case 'hexagon':
+            contractDetails.side = generateRandomValue(4, 8);
+            break;
+        case 'sector':
+            contractDetails.radius = generateRandomValue(5, 10);
+            contractDetails.angle = generateRandomValue(60, 270);
+            break;
         case 'prism':
             contractDetails.width = generateRandomValue(12, 18);
             contractDetails.height = generateRandomValue(6, 10);
             contractDetails.depth = generateRandomValue(3, 5);
+            break;
+        case 'cylinder':
+            contractDetails.radius = generateRandomValue(3, 8);
+            contractDetails.height = generateRandomValue(8, 15);
+            break;
+        case 'pyramid':
+            contractDetails.baseWidth = generateRandomValue(6, 12);
+            contractDetails.baseHeight = generateRandomValue(6, 12);
+            contractDetails.pyramidHeight = generateRandomValue(8, 15);
+            break;
+        case 'cube':
+            contractDetails.side = generateRandomValue(5, 12);
             break;
     }
 
@@ -548,25 +821,55 @@ function generateContractText(contract) {
     const clientMessages = {
         "Sr. Jorge": "Olá! Sou o Sr. Jorge e preciso pintar uma parede da minha casa.",
         "Dona Íris": "Oi querido! Sou a Dona Íris e tenho um projeto especial para você.",
+        "Construtora Silva": "Bom dia! Somos da Construtora Silva e temos um telhado para pintar.",
         "Arquiteta Lúcia": "Bom dia! Sou a Arquiteta Lúcia e tenho um projeto comercial.",
         "Marceneiro Davi": "E aí! Sou o Marceneiro Davi e preciso de ajuda com uma peça.",
-        "Logística Global": "Olá! Representamos a Logística Global. Temos um projeto industrial."
+        "Designer Ana": "Olá! Sou a Designer Ana e tenho um piso especial para pintar.",
+        "Agência Criativa": "Olá! Somos da Agência Criativa e precisamos pintar um logo.",
+        "Shopping Plaza": "Bom dia! Representamos o Shopping Plaza e temos um corredor.",
+        "Escola Municipal": "Olá! Somos da Escola Municipal e temos um pátio interno.",
+        "Logística Global": "Olá! Representamos a Logística Global. Temos um projeto industrial.",
+        "Arquiteta Moderna": "Oi! Sou uma arquiteta e tenho um projeto inovador.",
+        "Clube Esportivo": "Olá! Somos do Clube Esportivo e temos uma quadra especial.",
+        "Saneamento S.A.": "Bom dia! Somos da empresa de saneamento e temos um tanque.",
+        "Prefeitura": "Olá! Representamos a Prefeitura e temos um monumento.",
+        "Transportes XYZ": "Oi! Somos da Transportes XYZ e temos um contêiner especial."
     };
 
     const shapeDescriptions = {
         "rectangle": "uma superfície retangular",
-        "triangle": "uma superfície triangular", 
+        "triangle": "uma superfície triangular",
+        "trapezoid": "uma superfície trapezoidal",
         "circle": "uma superfície circular",
+        "parallelogram": "uma superfície em paralelogramo",
+        "rhombus": "uma superfície em formato de losango",
         "l-shape": "uma superfície em formato de L",
-        "prism": "um contêiner (todas as faces externas)"
+        "t-shape": "uma superfície em formato de T",
+        "u-shape": "uma superfície em formato de U",
+        "hexagon": "uma superfície hexagonal",
+        "sector": "um setor circular",
+        "prism": "um contêiner (todas as faces externas)",
+        "cylinder": "um tanque cilíndrico (superfície externa)",
+        "pyramid": "uma pirâmide (todas as faces)",
+        "cube": "um cubo (todas as faces)"
     };
 
     const instructions = {
         "rectangle": "Calcule a área: base × altura",
-        "triangle": "Calcule a área: (base × altura) ÷ 2", 
+        "triangle": "Calcule a área: (base × altura) ÷ 2",
+        "trapezoid": "Calcule a área: (base maior + base menor) × altura ÷ 2",
         "circle": "Calcule a área: π × raio² (use π = 3.14)",
+        "parallelogram": "Calcule a área: base × altura",
+        "rhombus": "Calcule a área: diagonal maior × diagonal menor ÷ 2",
         "l-shape": "Calcule a área total das duas partes",
-        "prism": "Calcule a área de superfície: 2(lw + lh + wh)"
+        "t-shape": "Calcule a área total das duas partes",
+        "u-shape": "Calcule a área total menos o recorte central",
+        "hexagon": "Calcule a área: 2.6 × lado²",
+        "sector": "Calcule a área: ângulo/360 × π × raio²",
+        "prism": "Calcule a área de superfície: 2(lw + lh + wh)",
+        "cylinder": "Calcule a área de superfície: 2πr² + 2πrh",
+        "pyramid": "Calcule a área: área base + 4 × área faces triangulares",
+        "cube": "Calcule a área de superfície: 6 × lado²"
     };
 
     return `${clientMessages[contract.client]}\n\n` +
@@ -701,7 +1004,26 @@ function setupContractScreen() {
     switch (d.shape) {
         case 'rectangle': dimensionsText = `Base: ${d.width}m, Altura: ${d.height}m`; break;
         case 'triangle': dimensionsText = `Base: ${d.base}m, Altura: ${d.height}m`; break;
+        case 'trapezoid': dimensionsText = `Base maior: ${d.baseMaior}m, Base menor: ${d.baseMenor}m, Altura: ${d.height}m`; break;
         case 'circle': dimensionsText = `Raio: ${d.radius}m. Use Pi = 3.14 e arredonde.`; break;
+        case 'parallelogram': dimensionsText = `Base: ${d.base}m, Altura: ${d.height}m`; break;
+        case 'rhombus': dimensionsText = `Diagonal maior: ${d.diagonal1}m, Diagonal menor: ${d.diagonal2}m`; break;
+        case 't-shape': dimensionsText = `Forma T: Horizontal [${d.w1}x${d.h1}], Vertical [${d.w2}x${d.h2}]`; break;
+        case 'u-shape': dimensionsText = `Forma U: Total [${d.wTotal}x${d.hTotal}], Recorte [${d.wRecorte}x${d.hRecorte}]`; break;
+        case 'hexagon': dimensionsText = `Lado: ${d.side}m. Use fórmula: 2.6 × lado²`; break;
+        case 'sector': dimensionsText = `Raio: ${d.radius}m, Ângulo: ${d.angle}°. Use Pi = 3.14`; break;
+        case 'cylinder': 
+            dimensionsText = `Raio: ${d.radius}m, Altura: ${d.height}m`; 
+            areaLabelText = 'Calcule a área de SUPERFÍCIE (m²):';
+            break;
+        case 'pyramid': 
+            dimensionsText = `Base: ${d.baseWidth}x${d.baseHeight}m, Altura: ${d.pyramidHeight}m`; 
+            areaLabelText = 'Calcule a área de SUPERFÍCIE (m²):';
+            break;
+        case 'cube': 
+            dimensionsText = `Lado: ${d.side}m`; 
+            areaLabelText = 'Calcule a área de SUPERFÍCIE (m²):';
+            break;
         case 'l-shape': dimensionsText = `Forma L: [${d.w1}x${d.h1}] e [${d.w2}x${d.h2}]`; break;
         case 'prism': 
             dimensionsText = ``; // Removido pois agora está na imagem
@@ -804,7 +1126,26 @@ function getCorrectArea() {
     switch (d.shape) {
         case 'rectangle': return d.width * d.height;
         case 'triangle': return (d.base * d.height) / 2;
+        case 'trapezoid': return ((d.baseMaior + d.baseMenor) * d.height) / 2;
         case 'circle': return Math.round(3.14 * d.radius * d.radius);
+        case 'parallelogram': return d.base * d.height;
+        case 'rhombus': return (d.diagonal1 * d.diagonal2) / 2;
+        case 't-shape': return (d.w1 * d.h1) + (d.w2 * d.h2);
+        case 'u-shape': return (d.wTotal * d.hTotal) - (d.wRecorte * d.hRecorte);
+        case 'hexagon': return Math.round(2.6 * d.side * d.side);
+        case 'sector': return Math.round((d.angle / 360) * 3.14 * d.radius * d.radius);
+        case 'cylinder': 
+            // Área de superfície: 2πr² + 2πrh
+            return Math.round(2 * 3.14 * d.radius * d.radius + 2 * 3.14 * d.radius * d.height);
+        case 'pyramid':
+            // Área de superfície: área da base + 4 × área das faces triangulares
+            const baseArea = d.baseWidth * d.baseHeight;
+            // Aproximação da área das faces triangulares usando altura da pirâmide
+            const faceArea = 4 * ((d.baseWidth * Math.sqrt((d.pyramidHeight * d.pyramidHeight) + (d.baseWidth * d.baseWidth / 4))) / 2);
+            return Math.round(baseArea + faceArea);
+        case 'cube': 
+            // Área de superfície: 6 × lado²
+            return 6 * d.side * d.side;
         case 'l-shape': return (d.w1 * d.h1) + (d.w2 * d.h2);
         case 'prism':
             // Área de superfície de um prisma retangular: 2(lw + lh + wh)
