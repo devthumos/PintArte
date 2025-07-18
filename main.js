@@ -371,11 +371,12 @@ function getCorrectArea() {
         case 'circle': return Math.round(3.14 * d.radius * d.radius);
         case 'l-shape': return (d.w1 * d.h1) + (d.w2 * d.h2);
         case 'prism':
-            // MUDANÇA: Adicionados comentários para explicar a fórmula
-            // A fórmula da área de superfície de um prisma retangular é a soma da área de suas 6 faces.
-            const bases = 2 * (d.depth * d.height);
-            const retangulos = 4 * (d.width * d.height);
-            return bases + retangulos;
+            // Área de superfície de um prisma retangular: 2(lw + lh + wh)
+            // Onde: l = width (largura), w = depth (profundidade), h = height (altura)
+            const area1 = d.width * d.depth;  // Base superior e inferior
+            const area2 = d.width * d.height; // Frente e trás
+            const area3 = d.depth * d.height; // Laterais esquerda e direita
+            return 2 * (area1 + area2 + area3);
         default: return 0;
     }
 }
@@ -391,17 +392,27 @@ function checkAnswer() {
          return;
     }
 
-    if (userAnswer !== correctArea) {
+    if (!currentContract.paints || currentContract.paints.length === 0) {
+        document.getElementById('contract-feedback').textContent = "Você precisa comprar tinta antes de pintar!";
+        document.getElementById('contract-feedback').style.color = '#ef4444';
+        return;
+    }
+
+    // Permitir tolerância de 1% para arredondamentos
+    const tolerance = Math.max(1, correctArea * 0.01);
+    const isCorrect = Math.abs(userAnswer - correctArea) <= tolerance;
+
+    if (!isCorrect) {
         // Jogador errou o cálculo! Toca o som de falha
         playFailureSound();
-        feedbackMessage = `Cálculo Incorreto! A área era de ${correctArea}m². <br><br>Você perdeu o custo da tinta e -5 de reputação.`;
-        gameState.reputation -= 5;
+        feedbackMessage = `Cálculo Incorreto! A área era de ${correctArea}m² (±${tolerance.toFixed(1)}). <br><br>Você perdeu o custo da tinta e -5 de reputação.`;
+        gameState.reputation = Math.max(0, gameState.reputation - 5);
     } else {
         if (currentContract.totalCoverage < correctArea) {
             // Cálculo certo mas tinta insuficiente! Toca o som de falha
             playFailureSound();
             feedbackMessage = `Cálculo correto, mas a tinta não foi suficiente! O cliente ficou insatisfeito. <br><br>Você perdeu o custo da tinta e -10 de reputação.`;
-            gameState.reputation -= 10;
+            gameState.reputation = Math.max(0, gameState.reputation - 10);
         } else {
             // Jogador acertou! Toca o som de sucesso
             playSuccessSound();
