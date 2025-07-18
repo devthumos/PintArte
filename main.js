@@ -46,6 +46,60 @@ function showFeedbackModal(message, buttonText = "OK", onConfirm = () => {}) {
     modal.classList.remove('hidden');
 }
 
+function showFailureOptionsModal(message) {
+    const modal = document.getElementById('feedback-modal');
+    const messageEl = document.getElementById('feedback-message');
+    const buttonEl = document.getElementById('feedback-button');
+    
+    messageEl.innerHTML = message;
+    
+    // Substituir o botão único por dois botões
+    buttonEl.style.display = 'none';
+    
+    // Criar container para os botões se não existir
+    let buttonsContainer = document.getElementById('failure-buttons-container');
+    if (!buttonsContainer) {
+        buttonsContainer = document.createElement('div');
+        buttonsContainer.id = 'failure-buttons-container';
+        buttonsContainer.className = 'flex gap-4 mt-8';
+        buttonEl.parentNode.appendChild(buttonsContainer);
+    }
+    
+    buttonsContainer.innerHTML = `
+        <button id="new-contract-btn" class="btn btn-green flex-1 text-xl py-3 rounded-lg">
+            🎯 Novo Contrato
+        </button>
+        <button id="back-home-btn" class="btn flex-1 text-xl py-3 rounded-lg">
+            🏠 Voltar ao Início
+        </button>
+    `;
+    
+    // Adicionar event listeners
+    document.getElementById('new-contract-btn').onclick = () => {
+        modal.classList.add('hidden');
+        resetModalToDefault();
+        startNewContract(); // Gerar novo contrato imediatamente
+    };
+    
+    document.getElementById('back-home-btn').onclick = () => {
+        modal.classList.add('hidden');
+        resetModalToDefault();
+        showScreen('home-screen');
+    };
+    
+    modal.classList.remove('hidden');
+}
+
+function resetModalToDefault() {
+    const buttonEl = document.getElementById('feedback-button');
+    const buttonsContainer = document.getElementById('failure-buttons-container');
+    
+    if (buttonsContainer) {
+        buttonsContainer.innerHTML = '';
+    }
+    buttonEl.style.display = 'block';
+}
+
 function updateStatusDisplay() {
     moneyDisplay.innerHTML = `<i class="fas fa-coins text-yellow-400"></i> ${gameState.money}`;
     reputationDisplay.innerHTML = `<i class="fas fa-star text-yellow-400"></i> ${gameState.reputation}`;
@@ -405,29 +459,45 @@ function checkAnswer() {
     if (!isCorrect) {
         // Jogador errou o cálculo! Toca o som de falha
         playFailureSound();
-        feedbackMessage = `Cálculo Incorreto! A área era de ${correctArea}m² (±${tolerance.toFixed(1)}). <br><br>Você perdeu o custo da tinta e -5 de reputação.`;
+        feedbackMessage = `❌ <strong>Cálculo Incorreto!</strong><br><br>A área era de ${correctArea}m² (±${tolerance.toFixed(1)}). <br><br>Você perdeu o custo da tinta e -5 de reputação.<br><br><strong>O que deseja fazer?</strong>`;
         gameState.reputation = Math.max(0, gameState.reputation - 5);
+        
+        currentContract = null; // Finaliza o contrato
+        updatePlayerLevel();
+        updateStatusDisplay();
+        
+        // Mostrar modal com opções
+        showFailureOptionsModal(feedbackMessage);
+        return;
     } else {
         if (currentContract.totalCoverage < correctArea) {
             // Cálculo certo mas tinta insuficiente! Toca o som de falha
             playFailureSound();
-            feedbackMessage = `Cálculo correto, mas a tinta não foi suficiente! O cliente ficou insatisfeito. <br><br>Você perdeu o custo da tinta e -10 de reputação.`;
+            feedbackMessage = `❌ <strong>Tinta Insuficiente!</strong><br><br>Cálculo correto, mas a tinta não foi suficiente! O cliente ficou insatisfeito. <br><br>Você perdeu o custo da tinta e -10 de reputação.<br><br><strong>O que deseja fazer?</strong>`;
             gameState.reputation = Math.max(0, gameState.reputation - 10);
+            
+            currentContract = null; // Finaliza o contrato
+            updatePlayerLevel();
+            updateStatusDisplay();
+            
+            // Mostrar modal com opções
+            showFailureOptionsModal(feedbackMessage);
+            return;
         } else {
             // Jogador acertou! Toca o som de sucesso
             playSuccessSound();
             const profit = currentContract.details.reward - currentContract.totalCost;
-            feedbackMessage = `Trabalho concluído! <br><br>A recompensa foi de ${currentContract.details.reward}, o custo da tinta foi ${currentContract.totalCost}.<br>Lucro de: ${profit} moedas. <br>+10 de reputação.`;
+            feedbackMessage = `✅ <strong>Trabalho Concluído!</strong><br><br>A recompensa foi de ${currentContract.details.reward}, o custo da tinta foi ${currentContract.totalCost}.<br>Lucro de: ${profit} moedas. <br>+10 de reputação.`;
             gameState.money += currentContract.details.reward;
             gameState.reputation += 10;
             gameState.contractsCompleted++;
+            
+            currentContract = null; // Finaliza o contrato
+            updatePlayerLevel();
+            updateStatusDisplay();
+            showFeedbackModal(feedbackMessage, "Continuar", () => showScreen('home-screen'));
         }
     }
-    
-    currentContract = null; // Finaliza o contrato
-    updatePlayerLevel();
-    updateStatusDisplay();
-    showFeedbackModal(feedbackMessage, "Continuar", () => showScreen('home-screen'));
 }
 
 function abandonContract() {
