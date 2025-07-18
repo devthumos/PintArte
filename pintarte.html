@@ -12,7 +12,7 @@
 <body class="w-full min-h-screen">
 
     <!-- Barra de Status Superior Fixa -->
-    <header class="sticky top-0 z-20 w-full bg-gray-800 bg-opacity-80 backdrop-blur-sm shadow-lg">
+    <header id="game-header" class="sticky top-0 z-20 w-full bg-gray-800 bg-opacity-80 backdrop-blur-sm shadow-lg hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-3">
             <h1 class="text-2xl font-bold text-yellow-400">PINTARTE</h1>
             <div class="flex items-center space-x-6 text-xl">
@@ -51,8 +51,34 @@
     </audio>
 
     <main>
+        <!-- Tela de Configuração de Áudio -->
+        <div id="audio-config-screen" class="fixed inset-0 bg-black flex items-center justify-center z-[100]">
+            <div class="bg-gray-800 border-4 border-yellow-400 rounded-lg shadow-2xl p-8 max-w-md mx-4">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-yellow-400 mb-2">🎵 PINTARTE</h2>
+                    <p class="text-gray-300 mb-8 text-lg">Configuração de Áudio</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-white text-xl mb-4">Deseja jogar com som?</p>
+                            <p class="text-gray-400 text-sm mb-6">O jogo inclui música de fundo e efeitos sonoros</p>
+                        </div>
+                        
+                        <div class="flex flex-col gap-4">
+                            <button id="enable-audio-btn" class="btn btn-green text-xl py-4 px-8 rounded-lg font-bold transform hover:scale-105 transition-all">
+                                🔊 SIM, COM SOM
+                            </button>
+                            <button id="disable-audio-btn" class="btn text-xl py-4 px-8 rounded-lg font-bold transform hover:scale-105 transition-all">
+                                🔇 SEM SOM
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Splash Screen -->
-        <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-[90] hidden">
             <img id="publisher-logo" src="assets/img/logo-unb.png" alt="Publisher Logo" class="max-w-md max-h-50 opacity-0 transition-opacity duration-1000">
         </div>
 

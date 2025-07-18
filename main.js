@@ -15,6 +15,9 @@ const gameState = {
     }
 };
 
+// --- CONFIGURAÇÕES DE ÁUDIO ---
+let audioEnabled = true;
+
 // --- ESTADO DO CONTRATO ATUAL ---
 let currentContract = null;
 
@@ -1233,6 +1236,19 @@ function abandonContract() {
 
 // --- SISTEMA DE ÁUDIO ---
 function initBackgroundMusic() {
+    if (!audioEnabled) {
+        // Se o áudio está desabilitado, remover autoplay e manter silenciado
+        const music = document.getElementById('background-music');
+        music.pause();
+        music.muted = true;
+        
+        // Atualizar ícone para mostrar que está mutado
+        const icon = document.getElementById('music-icon');
+        icon.classList.remove('fa-volume-up');
+        icon.classList.add('fa-volume-mute');
+        return;
+    }
+    
     const music = document.getElementById('background-music');
     music.volume = 0.3; // Volume mais baixo para não incomodar
     
@@ -1257,6 +1273,7 @@ function initBackgroundMusic() {
 }
 
 function startMusicOnInteraction() {
+    if (!audioEnabled) return;
     const music = document.getElementById('background-music');
     if (music.paused) {
         music.play().then(() => {
@@ -1268,6 +1285,8 @@ function startMusicOnInteraction() {
 }
 
 function toggleMusic() {
+    if (!audioEnabled) return; // Não permitir toggle se áudio está desabilitado globalmente
+    
     const music = document.getElementById('background-music');
     const icon = document.getElementById('music-icon');
     
@@ -1283,6 +1302,7 @@ function toggleMusic() {
 }
 
 function playClickSound() {
+    if (!audioEnabled) return;
     const clickSound = document.getElementById('click-sound');
     clickSound.currentTime = 0; // Reinicia o som para permitir cliques rápidos
     clickSound.volume = 0.5; // Volume do som de clique
@@ -1292,6 +1312,7 @@ function playClickSound() {
 }
 
 function playSuccessSound() {
+    if (!audioEnabled) return;
     const successSound = document.getElementById('success-sound');
     successSound.currentTime = 0; // Reinicia o som
     successSound.volume = 0.7; // Volume do som de acerto
@@ -1301,6 +1322,7 @@ function playSuccessSound() {
 }
 
 function playFailureSound() {
+    if (!audioEnabled) return;
     const failureSound = document.getElementById('failure-sound');
     failureSound.currentTime = 0; // Reinicia o som
     failureSound.volume = 0.7; // Volume do som de falha
@@ -1311,9 +1333,51 @@ function playFailureSound() {
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Iniciar splash screen
-    showSplashScreen();
+    // Mostrar tela de configuração de áudio primeiro
+    showAudioConfigScreen();
 });
+
+// --- TELA DE CONFIGURAÇÃO DE ÁUDIO ---
+function showAudioConfigScreen() {
+    const audioConfigScreen = document.getElementById('audio-config-screen');
+    const enableAudioBtn = document.getElementById('enable-audio-btn');
+    const disableAudioBtn = document.getElementById('disable-audio-btn');
+    
+    // Garantir que a tela esteja visível
+    audioConfigScreen.style.display = 'flex';
+    
+    // Event listeners para os botões
+    enableAudioBtn.onclick = () => {
+        audioEnabled = true;
+        proceedToSplashScreen();
+    };
+    
+    disableAudioBtn.onclick = () => {
+        audioEnabled = false;
+        proceedToSplashScreen();
+    };
+}
+
+function proceedToSplashScreen() {
+    const audioConfigScreen = document.getElementById('audio-config-screen');
+    const splashScreen = document.getElementById('splash-screen');
+    
+    // Fade out suave da tela de configuração
+    audioConfigScreen.style.transition = 'opacity 0.6s ease-out';
+    audioConfigScreen.style.opacity = '0';
+    
+    setTimeout(() => {
+        // Esconder completamente a tela de configuração
+        audioConfigScreen.style.display = 'none';
+        
+        // Mostrar splash screen sem piscar
+        splashScreen.classList.remove('hidden');
+        splashScreen.style.opacity = '1';
+        
+        // Iniciar splash screen
+        showSplashScreen();
+    }, 600);
+}
 
 // --- SPLASH SCREEN ---
 function showSplashScreen() {
@@ -1352,6 +1416,17 @@ function showSplashScreen() {
 }
 
 function initializeGame() {
+    // Mostrar o header agora que o jogo está iniciando
+    const header = document.getElementById('game-header');
+    header.classList.remove('hidden');
+    header.style.opacity = '0';
+    header.style.transition = 'opacity 0.5s ease-in';
+    
+    // Fade in do header
+    setTimeout(() => {
+        header.style.opacity = '1';
+    }, 100);
+    
     updateStatusDisplay();
     showScreen('home-screen');
     initBackgroundMusic();
