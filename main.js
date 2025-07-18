@@ -6,13 +6,15 @@ const gameState = {
     reputation: 0,
     level: 'Aprendiz',
     contractsCompleted: 0,
+    contractsAttempted: 0, // Nova métrica para calcular taxa de sucesso
     inventory: {
         1: 0, // Tinta P
         2: 0, // Tinta M  
         3: 0, // Tinta G
         4: 0, // Tinta GG
         5: 0  // Tinta PP
-    }
+    },
+    unlockedAchievements: [] // Conquistas já desbloqueadas
 };
 
 // --- CONFIGURAÇÕES DE ÁUDIO ---
@@ -210,8 +212,6 @@ function renderStore(mode, currentContract = null) {
 }
 
 function renderReputation() {
-    const reputationContainer = document.getElementById('reputation-details');
-    
     // Calcular estatísticas do inventário
     const inventoryItems = [];
     let totalInventoryValue = 0;
@@ -219,24 +219,164 @@ function renderReputation() {
     paints.forEach(paint => {
         const qty = gameState.inventory[paint.id] || 0;
         if (qty > 0) {
-            inventoryItems.push(`${paint.name}: ${qty}x`);
+            inventoryItems.push({ paint, qty });
             totalInventoryValue += qty * paint.price;
         }
     });
-    
-    const inventoryText = inventoryItems.length > 0 
-        ? inventoryItems.join(', ') 
-        : 'Inventário vazio';
-    
-    reputationContainer.innerHTML = `
-        <p>Título: <span class="font-bold text-yellow-300">${gameState.level}</span></p>
-        <p>Contratos Concluídos: <span class="font-bold">${gameState.contractsCompleted}</span></p>
-        <p>Reputação: <span class="font-bold">${gameState.reputation}</span></p>
-        <hr class="border-gray-500 my-4">
-        <p><i class="fas fa-coins text-yellow-400"></i> Moedas: <span class="font-bold">${gameState.money}</span></p>
-        <p><i class="fas fa-paint-brush text-blue-400"></i> Tintas em Estoque: <span class="font-bold text-blue-300">${inventoryText}</span></p>
-        <p class="text-sm text-gray-400">Valor do Inventário: ${totalInventoryValue} moedas</p>
+
+    // Atualizar título do jogador
+    document.getElementById('player-title').textContent = `${gameState.level} • ${gameState.contractsCompleted} contratos concluídos`;
+
+    // Card de Nível/Progresso
+    const levelInfo = document.getElementById('level-info');
+    const nextLevelThreshold = gameState.level === 'Aprendiz' ? 3 : gameState.level === 'Pintor' ? 8 : '∞';
+    const progressPercent = gameState.level === 'Aprendiz' 
+        ? (gameState.contractsCompleted / 3) * 100
+        : gameState.level === 'Pintor' 
+        ? ((gameState.contractsCompleted - 3) / 5) * 100 
+        : 100;
+
+    levelInfo.innerHTML = `
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-white font-bold text-lg">${gameState.level}</span>
+            <span class="text-blue-200">${gameState.contractsCompleted}/${nextLevelThreshold}</span>
+        </div>
+        <div class="w-full bg-blue-900 rounded-full h-3">
+            <div class="bg-gradient-to-r from-blue-400 to-blue-200 h-3 rounded-full transition-all duration-500" 
+                 style="width: ${Math.min(progressPercent, 100)}%"></div>
+        </div>
+        <p class="text-blue-200 text-sm mt-2">
+            ${gameState.level === 'Mestre' ? 'Nível máximo atingido!' : 
+              `${nextLevelThreshold - gameState.contractsCompleted} contratos para próximo nível`}
+        </p>
     `;
+
+    // Card de Estatísticas
+    const statsInfo = document.getElementById('stats-info');
+    const successRate = gameState.contractsAttempted > 0 
+        ? Math.round((gameState.contractsCompleted / gameState.contractsAttempted) * 100)
+        : 0;
+    
+    statsInfo.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span class="text-white">🏆 Reputação:</span>
+            <span class="text-green-200 font-bold">${gameState.reputation}</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-white">✅ Contratos:</span>
+            <span class="text-green-200 font-bold">${gameState.contractsCompleted}</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-white">📊 Taxa de Sucesso:</span>
+            <span class="text-green-200 font-bold">${successRate}%</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-white">🎯 Tentativas:</span>
+            <span class="text-green-200 font-bold">${gameState.contractsAttempted}</span>
+        </div>
+    `;
+
+    // Card de Finanças
+    const financeInfo = document.getElementById('finance-info');
+    financeInfo.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span class="text-white">💰 Moedas:</span>
+            <span class="text-yellow-200 font-bold">${gameState.money}</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-white">📦 Valor Estoque:</span>
+            <span class="text-yellow-200 font-bold">${totalInventoryValue}</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span class="text-white">💎 Patrimônio Total:</span>
+            <span class="text-yellow-200 font-bold">${gameState.money + totalInventoryValue}</span>
+        </div>
+    `;
+
+    // Grid de Inventário
+    const inventoryGrid = document.getElementById('inventory-grid');
+    if (inventoryItems.length === 0) {
+        inventoryGrid.innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <i class="fas fa-box-open text-4xl text-purple-300 mb-4"></i>
+                <p class="text-purple-200">Nenhuma tinta em estoque</p>
+                <p class="text-purple-300 text-sm">Visite a loja para comprar tintas</p>
+            </div>
+        `;
+    } else {
+        inventoryGrid.innerHTML = inventoryItems.map(item => `
+            <div class="bg-purple-700 rounded-lg p-4 text-center border border-purple-500">
+                <div class="text-2xl mb-2">🎨</div>
+                <p class="text-white font-bold text-sm">${item.paint.name}</p>
+                <p class="text-purple-200 text-xs">Qtd: ${item.qty}</p>
+                <p class="text-purple-200 text-xs">${item.paint.coverage * item.qty}m²</p>
+            </div>
+        `).join('');
+    }
+
+    // Grid de Conquistas
+    const achievementsGrid = document.getElementById('achievements-grid');
+    const achievements = [
+        { 
+            id: 'first-contract', 
+            name: 'Primeiro Contrato', 
+            icon: '🎯', 
+            unlocked: gameState.contractsCompleted >= 1,
+            description: 'Complete seu primeiro contrato'
+        },
+        { 
+            id: 'apprentice', 
+            name: 'Aprendiz Completo', 
+            icon: '🔰', 
+            unlocked: gameState.level !== 'Aprendiz',
+            description: 'Alcance o nível Pintor'
+        },
+        { 
+            id: 'painter', 
+            name: 'Pintor Experiente', 
+            icon: '🎨', 
+            unlocked: gameState.level === 'Mestre',
+            description: 'Alcance o nível Mestre'
+        },
+        { 
+            id: 'millionaire', 
+            name: 'Empreendedor Rico', 
+            icon: '💰', 
+            unlocked: gameState.money >= 2500,
+            description: 'Acumule 2500+ moedas'
+        },
+        { 
+            id: 'reputation-100', 
+            name: 'Reputação de Ouro', 
+            icon: '⭐', 
+            unlocked: gameState.reputation >= 100,
+            description: 'Alcance 100 pontos de reputação'
+        },
+        { 
+            id: 'geometry-master', 
+            name: 'Mestre da Geometria', 
+            icon: '📐', 
+            unlocked: gameState.contractsCompleted >= 10,
+            description: 'Complete 10 contratos'
+        },
+        { 
+            id: 'paint-collector', 
+            name: 'Colecionador de Tintas', 
+            icon: '🎨', 
+            unlocked: Object.values(gameState.inventory).reduce((sum, qty) => sum + qty, 0) >= 10,
+            description: 'Tenha 10+ tintas em estoque'
+        }
+    ];
+
+    achievementsGrid.innerHTML = achievements.map(achievement => `
+        <div class="bg-indigo-700 rounded-lg p-4 text-center border-2 ${achievement.unlocked ? 'border-yellow-400' : 'border-indigo-500'} 
+                    ${achievement.unlocked ? 'bg-gradient-to-br from-indigo-600 to-indigo-700' : 'opacity-60'}">
+            <div class="text-3xl mb-2 ${achievement.unlocked ? '' : 'grayscale'}">${achievement.icon}</div>
+            <p class="text-white font-bold text-sm mb-1">${achievement.name}</p>
+            <p class="text-indigo-200 text-xs">${achievement.description}</p>
+            ${achievement.unlocked ? '<p class="text-yellow-400 text-xs mt-1">✓ Desbloqueado</p>' : '<p class="text-gray-400 text-xs mt-1">🔒 Bloqueado</p>'}
+        </div>
+    `).join('');
 }
 
 // --- FUNÇÕES DE DESENHO NO CANVAS ---
@@ -597,9 +737,19 @@ function generateRandomValue(min, max) {
 }
 
 function updatePlayerLevel() {
+    const previousLevel = gameState.level;
+    
     if (gameState.contractsCompleted >= 8) gameState.level = 'Mestre';
     else if (gameState.contractsCompleted >= 3) gameState.level = 'Pintor';
     else gameState.level = 'Aprendiz';
+    
+    // Se o nível mudou, verificar conquistas relacionadas a nível
+    if (previousLevel !== gameState.level) {
+        // Usar setTimeout para garantir que as verificações sejam feitas após a atualização completa
+        setTimeout(() => {
+            checkForNewAchievements();
+        }, 100);
+    }
 }
 
 function showScreen(screenId) {
@@ -612,6 +762,22 @@ function showScreen(screenId) {
 
     if (screenId === 'reputation-screen') renderReputation();
     if (screenId === 'contract-screen') renderCart();
+}
+
+function goToHomeScreen() {
+    // Tocar som de clique se áudio estiver habilitado
+    playClickSound();
+    
+    // Se há um contrato ativo, perguntar antes de abandonar
+    if (currentContract && currentContract.paints.length > 0) {
+        const confirmMessage = "Você tem um contrato em andamento. Deseja realmente voltar ao menu principal? (O progresso será perdido)";
+        if (confirm(confirmMessage)) {
+            abandonContract();
+        }
+    } else {
+        // Voltar diretamente para home se não há contrato ativo
+        showScreen('home-screen');
+    }
 }
 
 function showStoreForContract() {
@@ -629,6 +795,9 @@ function startNewContract() {
     updatePlayerLevel();
     const availableContracts = contractsData.filter(c => c.level === gameState.level);
     const contractDetails = { ...availableContracts[Math.floor(Math.random() * availableContracts.length)] };
+
+    // Incrementar tentativas de contrato
+    gameState.contractsAttempted++;
 
     // Gerar dimensões aleatórias
     switch (contractDetails.shape) {
@@ -929,6 +1098,10 @@ function acceptContract() {
         totalCost: 0
     };
     
+    // Incrementar tentativas de contrato
+    gameState.contractsAttempted++;
+    updateStatusDisplay();
+    
     // Transição suave para a tela de contrato
     hideScreenWithFade('contract-intro-screen', () => {
         setupContractScreen();
@@ -1062,6 +1235,10 @@ function buyPaintForInventory(paintId) {
     gameState.inventory[paint.id] = (gameState.inventory[paint.id] || 0) + 1;
     
     updateStatusDisplay();
+    
+    // Verificar se novas conquistas foram desbloqueadas (especialmente Colecionador de Tintas e Empreendedor Rico)
+    checkForNewAchievements();
+    
     showFeedbackModal(`🛒 ${paint.name} adicionada ao seu inventário!`, "OK", () => {
         // Atualizar a loja para mostrar a nova quantidade
         renderStore('inventory');
@@ -1087,6 +1264,10 @@ function buyPaintForContract(paintId) {
     
     document.getElementById('paint-btn').disabled = false;
     updateStatusDisplay();
+    
+    // Verificar se novas conquistas foram desbloqueadas (especialmente Empreendedor Rico)
+    checkForNewAchievements();
+    
     showFeedbackModal(`💰 ${paint.name} comprada e adicionada ao projeto!`, "OK", () => {
         // Atualizar a loja para mostrar as mudanças
         renderStore('contract', currentContract);
@@ -1220,6 +1401,10 @@ function checkAnswer() {
             currentContract = null; // Finaliza o contrato
             updatePlayerLevel();
             updateStatusDisplay();
+            
+            // Verificar se novas conquistas foram desbloqueadas
+            checkForNewAchievements();
+            
             showFeedbackModal(feedbackMessage, "Próximo Contrato", () => showContractIntroScreen());
         }
     }
@@ -1328,6 +1513,100 @@ function playFailureSound() {
     failureSound.volume = 0.7; // Volume do som de falha
     failureSound.play().catch(error => {
         console.log('Erro ao tocar som de falha:', error);
+    });
+}
+
+// --- SISTEMA DE TOAST DE CONQUISTAS ---
+function showAchievementToast(achievement) {
+    const toast = document.getElementById('achievement-toast');
+    const icon = document.getElementById('toast-icon');
+    const title = document.getElementById('toast-title');
+    const description = document.getElementById('toast-description');
+    
+    // Configurar conteúdo do toast
+    icon.textContent = achievement.icon;
+    title.textContent = achievement.name;
+    description.textContent = achievement.description;
+    
+    // Mostrar toast com animação
+    toast.classList.remove('hide');
+    toast.classList.add('show');
+    
+    // Tocar som de sucesso se áudio estiver habilitado
+    playSuccessSound();
+    
+    // Auto-ocultar após 4 segundos
+    setTimeout(() => {
+        hideAchievementToast();
+    }, 4000);
+}
+
+function hideAchievementToast() {
+    const toast = document.getElementById('achievement-toast');
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+}
+
+function checkForNewAchievements() {
+    const achievements = [
+        { 
+            id: 'first-contract', 
+            name: 'Primeiro Contrato', 
+            icon: '🎯', 
+            unlocked: gameState.contractsCompleted >= 1,
+            description: 'Complete seu primeiro contrato'
+        },
+        { 
+            id: 'apprentice', 
+            name: 'Aprendiz Completo', 
+            icon: '🔰', 
+            unlocked: gameState.level !== 'Aprendiz',
+            description: 'Alcance o nível Pintor'
+        },
+        { 
+            id: 'painter', 
+            name: 'Pintor Experiente', 
+            icon: '🎨', 
+            unlocked: gameState.level === 'Mestre',
+            description: 'Alcance o nível Mestre'
+        },
+        { 
+            id: 'millionaire', 
+            name: 'Empreendedor Rico', 
+            icon: '💰', 
+            unlocked: gameState.money >= 2500,
+            description: 'Acumule 2500+ moedas'
+        },
+        { 
+            id: 'reputation-100', 
+            name: 'Reputação de Ouro', 
+            icon: '⭐', 
+            unlocked: gameState.reputation >= 100,
+            description: 'Alcance 100 pontos de reputação'
+        },
+        { 
+            id: 'geometry-master', 
+            name: 'Mestre da Geometria', 
+            icon: '📐', 
+            unlocked: gameState.contractsCompleted >= 10,
+            description: 'Complete 10 contratos'
+        },
+        { 
+            id: 'paint-collector', 
+            name: 'Colecionador de Tintas', 
+            icon: '🎨', 
+            unlocked: Object.values(gameState.inventory).reduce((sum, qty) => sum + qty, 0) >= 10,
+            description: 'Tenha 10+ tintas em estoque'
+        }
+    ];
+
+    // Verificar conquistas recém-desbloqueadas
+    achievements.forEach(achievement => {
+        if (achievement.unlocked && !gameState.unlockedAchievements.includes(achievement.id)) {
+            // Nova conquista desbloqueada!
+            gameState.unlockedAchievements.push(achievement.id);
+            showAchievementToast(achievement);
+        }
     });
 }
 

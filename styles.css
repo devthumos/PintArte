@@ -314,3 +314,25 @@ input[type=number] {
     opacity: 0;
     transform: scale(0.95);
 }
+
+/* Toast de Conquista */
+#achievement-toast {
+    animation-fill-mode: forwards;
+}
+
+#achievement-toast.show {
+    transform: translateX(0);
+}
+
+#achievement-toast.hide {
+    transform: translateX(100%);
+}
+
+@keyframes achievement-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 140, 0, 0.3); }
+}
+
+#achievement-toast.show .bg-gradient-to-br {
+    animation: achievement-glow 2s ease-in-out;
+}

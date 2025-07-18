@@ -119,6 +119,23 @@ O jogo apresenta diversos clientes realistas com projetos autênticos:
 - 🏅 **Sistema de Recompensas**: Incentivo monetário no jogo
 - 📈 **Acompanhamento**: Contratos completados e nível atual
 
+### Sistema de Conquistas e Reputação
+- 🏆 **7 Conquistas Desbloqueáveis**: Objetivos progressivos com recompensas visuais
+- 🎯 **Primeiro Contrato**: Complete seu primeiro projeto
+- 🔰 **Aprendiz Completo**: Alcance o nível Pintor
+- 🎨 **Pintor Experiente**: Alcance o nível Mestre
+- 💰 **Empreendedor Rico**: Acumule 2500+ moedas
+- ⭐ **Reputação de Ouro**: Alcance 100 pontos de reputação
+- 📐 **Mestre da Geometria**: Complete 10 contratos
+- 🎨 **Colecionador de Tintas**: Tenha 10+ tintas em estoque
+
+### Toast Notifications
+- 🎉 **Notificações Instantâneas**: Alertas visuais para conquistas desbloqueadas
+- ✨ **Animações Suaves**: Efeitos de entrada e saída com brilho
+- 🔊 **Feedback Sonoro**: Som de sucesso acompanha o desbloqueio
+- ⏱️ **Auto-Ocultar**: Desaparecem automaticamente após 4 segundos
+- 🎨 **Design Consistente**: Visual harmonioso com a estética retrô do jogo
+
 ## 🛠️ Tecnologias Utilizadas
 
 - **HTML5**: Estrutura da aplicação
