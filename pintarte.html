@@ -118,7 +118,7 @@
                             <p id="contract-client" class="text-shadow-none mb-2 text-lg"></p>
                             <p id="contract-project" class="text-shadow-none mb-2 text-lg"></p>
                             <p id="contract-reward" class="text-shadow-none mb-4 text-lg font-bold text-green-600"></p>
-                            <div id="shape-container" class="mx-auto flex items-center justify-center" style="height: 200px;"></div>
+                            <div id="shape-container" class="mx-auto flex items-center justify-center"></div>
                             <p id="shape-dimensions" class="text-shadow-none mt-2 font-bold text-sm"></p>
                         </div>
                         <div id="paint-cart" class="game-card p-4">
@@ -268,31 +268,40 @@
         }
 
         function renderShape(contract) {
-             const container = document.getElementById('shape-container');
-            container.innerHTML = ''; // Limpa a forma anterior
-            container.style.cssText = 'margin: auto; display: flex; align-items: center; justify-content: center; height: 200px;'; // Reseta estilos
+            const container = document.getElementById('shape-container');
+            container.innerHTML = '';
+            // CORREÇÃO: Usar min-height em vez de height para permitir que o contêiner cresça
+            container.style.cssText = 'margin: auto; display: flex; align-items: center; justify-content: center; min-height: 210px;';
 
-            switch (contract.details.shape) {
+            const d = contract.details;
+            switch (d.shape) {
                 case 'rectangle':
-                    container.innerHTML = `<div class="bg-blue-500" style="width: ${contract.details.width * 10}px; height: ${contract.details.height * 10}px;"></div>`;
+                    container.innerHTML = `<div class="bg-blue-500" style="width: ${d.width * 10}px; height: ${d.height * 10}px;"></div>`;
                     break;
                 case 'triangle':
-                    container.innerHTML = `<div style="width: 0; height: 0; border-left: ${contract.details.base * 5}px solid transparent; border-right: ${contract.details.base * 5}px solid transparent; border-bottom: ${contract.details.height * 10}px solid #60a5fa;"></div>`;
+                    container.innerHTML = `<div style="width: 0; height: 0; border-left: ${d.base * 5}px solid transparent; border-right: ${d.base * 5}px solid transparent; border-bottom: ${d.height * 10}px solid #60a5fa;"></div>`;
                     break;
                 case 'circle':
-                    container.innerHTML = `<div class="bg-green-400 rounded-full" style="width: ${contract.details.radius * 20}px; height: ${contract.details.radius * 20}px;"></div>`;
+                    container.innerHTML = `<div class="bg-green-400 rounded-full" style="width: ${d.radius * 20}px; height: ${d.radius * 20}px;"></div>`;
                     break;
                 case 'l-shape':
-                    container.innerHTML = `<div class="relative bg-purple-500" style="width: ${contract.details.w1 * 10}px; height: ${contract.details.h1 * 10}px;"><div class="absolute top-full left-0 bg-purple-500" style="width: ${contract.details.w2 * 10}px; height: ${contract.details.h2 * 10}px;"></div></div>`;
+                    // CORREÇÃO: Usar um layout flexível para empilhar as partes da forma em L
+                    container.style.alignItems = 'flex-start';
+                    container.innerHTML = `
+                        <div>
+                            <div class="bg-purple-500" style="width: ${d.w1 * 10}px; height: ${d.h1 * 10}px;"></div>
+                            <div class="bg-purple-500" style="width: ${d.w2 * 10}px; height: ${d.h2 * 10}px;"></div>
+                        </div>
+                    `;
                     break;
                 case 'prism':
                      container.innerHTML = `
                         <div class="prism-net" style="width: 180px;">
-                            <div class="face top" style="width: ${contract.details.width * 5}px; height: ${contract.details.depth * 5}px;"></div>
-                            <div class="face left" style="width: ${contract.details.depth * 5}px; height: ${contract.details.height * 5}px;"></div>
-                            <div class="face front" style="width: ${contract.details.width * 5}px; height: ${contract.details.height * 5}px;"></div>
-                            <div class="face right" style="width: ${contract.details.depth * 5}px; height: ${contract.details.height * 5}px;"></div>
-                            <div class="face bottom" style="width: ${contract.details.width * 5}px; height: ${contract.details.height * 5}px;"></div>
+                            <div class="face top" style="width: ${d.width * 5}px; height: ${d.depth * 5}px;"></div>
+                            <div class="face left" style="width: ${d.depth * 5}px; height: ${d.height * 5}px;"></div>
+                            <div class="face front" style="width: ${d.width * 5}px; height: ${d.height * 5}px;"></div>
+                            <div class="face right" style="width: ${d.depth * 5}px; height: ${d.height * 5}px;"></div>
+                            <div class="face bottom" style="width: ${d.width * 5}px; height: ${d.depth * 5}px;"></div>
                         </div>
                     `;
                     break;
