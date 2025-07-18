@@ -72,3 +72,37 @@ input[type=number] {
     color: #333;
     text-shadow: none;
 }
+
+/* Controles de áudio */
+#music-toggle {
+    transition: color 0.3s ease;
+}
+
+#music-toggle:hover {
+    color: #fbb741;
+}
+
+/* Splash Screen */
+#splash-screen {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    z-index: 9999;
+    transition: opacity 500ms ease-in-out;
+}
+
+#publisher-logo {
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+    transform: scale(0.8);
+    transition: all 1000ms ease-in-out;
+    max-width: 300px;
+    max-height: 200px;
+}
+
+#publisher-logo.fade-in {
+    opacity: 1 !important;
+    transform: scale(1);
+}
+
+#publisher-logo.fade-out {
+    opacity: 0 !important;
+    transform: scale(0.9);
+}

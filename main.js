@@ -589,6 +589,47 @@ function playFailureSound() {
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Iniciar splash screen
+    showSplashScreen();
+});
+
+// --- SPLASH SCREEN ---
+function showSplashScreen() {
+    const splashScreen = document.getElementById('splash-screen');
+    const publisherLogo = document.getElementById('publisher-logo');
+    const homeScreen = document.getElementById('home-screen');
+    
+    // Garantir que a splash screen esteja visível
+    splashScreen.style.display = 'flex';
+    homeScreen.classList.remove('active');
+    
+    // Sequência da splash screen
+    setTimeout(() => {
+        // Fade-in da logo (1s)
+        publisherLogo.classList.add('fade-in');
+        
+        setTimeout(() => {
+            // Fade-out da logo (1s)
+            publisherLogo.classList.remove('fade-in');
+            publisherLogo.classList.add('fade-out');
+            
+            setTimeout(() => {
+                // Esconder splash screen e mostrar jogo (0.5s)
+                splashScreen.style.opacity = '0';
+                
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    homeScreen.classList.add('active');
+                    
+                    // Inicializar o jogo após a splash screen
+                    initializeGame();
+                }, 500);
+            }, 1000);
+        }, 1500); // Logo fica visível por 1.5s
+    }, 300); // Pequeno delay inicial
+}
+
+function initializeGame() {
     updateStatusDisplay();
     showScreen('home-screen');
     initBackgroundMusic();
@@ -600,4 +641,4 @@ document.addEventListener('DOMContentLoaded', () => {
             playClickSound();
         }
     });
-});
+}
