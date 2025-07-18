@@ -75,9 +75,36 @@
             <div class="flex items-center space-x-6 text-xl">
                 <div id="money-display"><i class="fas fa-coins text-yellow-400"></i> 500</div>
                 <div id="reputation-display"><i class="fas fa-star text-yellow-400"></i> 0</div>
+                <button id="music-toggle" onclick="toggleMusic()" class="text-yellow-400 hover:text-yellow-300 transition-colors">
+                    <i id="music-icon" class="fas fa-volume-up"></i>
+                </button>
             </div>
         </div>
     </header>
+
+    <!-- Elemento de áudio para música de fundo -->
+    <audio id="background-music" loop preload="auto" autoplay>
+        <source src="assets/sounds/ost.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Elemento de áudio para som de clique -->
+    <audio id="click-sound" preload="auto">
+        <source src="assets/sounds/click.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Elemento de áudio para som de acerto -->
+    <audio id="success-sound" preload="auto">
+        <source src="assets/sounds/acerto.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Elemento de áudio para som de falha -->
+    <audio id="failure-sound" preload="auto">
+        <source src="assets/sounds/falha.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
 
     <main class="mt-8">
         <!-- Tela Inicial -->
@@ -553,13 +580,19 @@
             }
 
             if (userAnswer !== correctArea) {
+                // Jogador errou o cálculo! Toca o som de falha
+                playFailureSound();
                 feedbackMessage = `Cálculo Incorreto! A área era de ${correctArea}m². <br><br>Você perdeu o custo da tinta e -5 de reputação.`;
                 gameState.reputation -= 5;
             } else {
                 if (currentContract.totalCoverage < correctArea) {
+                    // Cálculo certo mas tinta insuficiente! Toca o som de falha
+                    playFailureSound();
                     feedbackMessage = `Cálculo correto, mas a tinta não foi suficiente! O cliente ficou insatisfeito. <br><br>Você perdeu o custo da tinta e -10 de reputação.`;
                     gameState.reputation -= 10;
                 } else {
+                    // Jogador acertou! Toca o som de sucesso
+                    playSuccessSound();
                     const profit = currentContract.details.reward - currentContract.totalCost;
                     feedbackMessage = `Trabalho concluído! <br><br>A recompensa foi de ${currentContract.details.reward}, o custo da tinta foi ${currentContract.totalCost}.<br>Lucro de: ${profit} moedas. <br>+10 de reputação.`;
                     gameState.money += currentContract.details.reward;
@@ -584,10 +617,98 @@
         }
 
 
+        // --- SISTEMA DE ÁUDIO ---
+        function initBackgroundMusic() {
+            const music = document.getElementById('background-music');
+            music.volume = 0.3; // Volume mais baixo para não incomodar
+            
+            // Tenta tocar automaticamente quando a página carrega
+            const tryPlay = () => {
+                music.play().then(() => {
+                    console.log('Música iniciada automaticamente');
+                }).catch(error => {
+                    console.log('Autoplay foi bloqueado pelo navegador. A música tocará na primeira interação.');
+                    // Adiciona listeners para tocar na primeira interação
+                    document.addEventListener('click', startMusicOnInteraction, { once: true });
+                    document.addEventListener('keydown', startMusicOnInteraction, { once: true });
+                    document.addEventListener('touchstart', startMusicOnInteraction, { once: true });
+                });
+            };
+
+            // Tenta tocar imediatamente
+            tryPlay();
+            
+            // Tenta novamente após um pequeno delay
+            setTimeout(tryPlay, 500);
+        }
+
+        function startMusicOnInteraction() {
+            const music = document.getElementById('background-music');
+            if (music.paused) {
+                music.play().then(() => {
+                    console.log('Música iniciada após interação do usuário');
+                }).catch(error => {
+                    console.log('Erro ao iniciar música:', error);
+                });
+            }
+        }
+
+        function toggleMusic() {
+            const music = document.getElementById('background-music');
+            const icon = document.getElementById('music-icon');
+            
+            if (music.paused) {
+                music.play();
+                icon.classList.remove('fa-volume-mute');
+                icon.classList.add('fa-volume-up');
+            } else {
+                music.pause();
+                icon.classList.remove('fa-volume-up');
+                icon.classList.add('fa-volume-mute');
+            }
+        }
+
+        function playClickSound() {
+            const clickSound = document.getElementById('click-sound');
+            clickSound.currentTime = 0; // Reinicia o som para permitir cliques rápidos
+            clickSound.volume = 0.5; // Volume do som de clique
+            clickSound.play().catch(error => {
+                console.log('Erro ao tocar som de clique:', error);
+            });
+        }
+
+        function playSuccessSound() {
+            const successSound = document.getElementById('success-sound');
+            successSound.currentTime = 0; // Reinicia o som
+            successSound.volume = 0.7; // Volume do som de acerto
+            successSound.play().catch(error => {
+                console.log('Erro ao tocar som de acerto:', error);
+            });
+        }
+
+        function playFailureSound() {
+            const failureSound = document.getElementById('failure-sound');
+            failureSound.currentTime = 0; // Reinicia o som
+            failureSound.volume = 0.7; // Volume do som de falha
+            failureSound.play().catch(error => {
+                console.log('Erro ao tocar som de falha:', error);
+            });
+        }
+
+
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
             updateStatusDisplay();
             showScreen('home-screen');
+            initBackgroundMusic();
+            
+            // Adiciona som de clique para todos os cliques do mouse esquerdo
+            document.addEventListener('click', (event) => {
+                // Verifica se é o botão esquerdo do mouse (button 0)
+                if (event.button === 0 || event.which === 1 || event.button === undefined) {
+                    playClickSound();
+                }
+            });
         });
     </script>
 
