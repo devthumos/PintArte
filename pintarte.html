@@ -64,20 +64,6 @@
             color: #333;
             text-shadow: none;
         }
-        .prism-net {
-            display: grid;
-            grid-template-areas:
-                ". top ."
-                "left front right"
-                ". bottom .";
-            gap: 2px;
-        }
-        .face { background-color: #60a5fa; border: 1px solid #1e3a8a; }
-        .front { grid-area: front; }
-        .top { grid-area: top; }
-        .bottom { grid-area: bottom; }
-        .left { grid-area: left; }
-        .right { grid-area: right; }
     </style>
 </head>
 <body class="w-full min-h-screen">
@@ -191,7 +177,7 @@
             { level: 'Aprendiz', name: "Muro Triangular", client: "Dona Íris", shape: 'triangle', reward: 200, penalty: 15 },
             { level: 'Pintor', name: "Piso em L", client: "Arquiteta Lúcia", shape: 'l-shape', reward: 650, penalty: 25 },
             { level: 'Pintor', name: "Tampo de Mesa Redondo", client: "Marceneiro Davi", shape: 'circle', reward: 700, penalty: 30 },
-            { level: 'Mestre', name: "Pintar Contêiner", client: "Logística Global", shape: 'prism', reward: 1500, penalty: 50 },
+            { level: 'Mestre', name: "Pintar Contêiner", client: "Logística Global", shape: 'prism', reward: 1700, penalty: 50 },
         ];
         
         const paints = [
@@ -267,11 +253,114 @@
             `;
         }
 
+        // --- FUNÇÕES DE DESENHO NO CANVAS ---
+        function desenharSetaComTexto(ctx, x1, y1, x2, y2, texto, posicaoTexto) {
+            const tamPonta = 8;
+            const angulo = Math.atan2(y2 - y1, x2 - x1);
+
+            ctx.save();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.fillStyle = '#2c3e50';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + tamPonta * Math.cos(angulo + Math.PI / 6), y1 + tamPonta * Math.sin(angulo + Math.PI / 6));
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + tamPonta * Math.cos(angulo - Math.PI / 6), y1 + tamPonta * Math.sin(angulo - Math.PI / 6));
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - tamPonta * Math.cos(angulo - Math.PI / 6), y2 - tamPonta * Math.sin(angulo - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - tamPonta * Math.cos(angulo + Math.PI / 6), y2 - tamPonta * Math.sin(angulo + Math.PI / 6));
+            ctx.stroke();
+
+            ctx.font = 'bold 10px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let xTexto = (x1 + x2) / 2;
+            let yTexto = (y1 + y2) / 2;
+            const espaco = 15;
+
+            if (posicaoTexto === 'acima') yTexto -= espaco;
+            if (posicaoTexto === 'abaixo') yTexto += espaco;
+            if (posicaoTexto === 'esquerda') xTexto -= ctx.measureText(texto).width / 2 + espaco;
+            if (posicaoTexto === 'direita') xTexto += ctx.measureText(texto).width / 2 + 5 + espaco;
+            
+            ctx.fillText(texto, xTexto, yTexto);
+            ctx.restore();
+        }
+
+        function renderPrismOnCanvas(d) {
+            const container = document.getElementById('shape-container');
+            container.innerHTML = '<canvas id="shape-canvas" width="400" height="300"></canvas>';
+            const canvas = document.getElementById('shape-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const escala = 4;
+            const corPreenchimento = '#a0e0f0';
+            const corLinha = '#000000';
+            const deslocamentoX = 50;
+            const deslocamentoY = 50;
+
+            const L_px = d.width * escala;
+            const H_px = d.height * escala;
+            const P_px = d.depth * escala;
+
+            ctx.strokeStyle = corLinha;
+            ctx.fillStyle = corPreenchimento;
+            ctx.lineWidth = 2;
+
+            const xRet1 = deslocamentoX+L_px;
+            const yRet1 = deslocamentoY;
+            ctx.fillRect(xRet1, yRet1, L_px, H_px);
+            ctx.strokeRect(xRet1, yRet1, L_px, H_px);
+
+            const xRet2 = xRet1;
+            const yRet2 = yRet1 + H_px;
+            ctx.fillRect(xRet2, yRet2, L_px, H_px);
+            ctx.strokeRect(xRet2, yRet2, L_px, H_px);
+
+            const xRet3 = xRet1;
+            const yRet3 = yRet2 + H_px;
+            ctx.fillRect(xRet3, yRet3, L_px, H_px);
+            ctx.strokeRect(xRet3, yRet3, L_px, H_px);
+
+            const xRet4 = xRet1;
+            const yRet4 = yRet3 + H_px;
+            ctx.fillRect(xRet4, yRet4, L_px, H_px);
+            ctx.strokeRect(xRet4, yRet4, L_px, H_px);
+
+            const xBase1 = xRet2 - P_px;
+            const yBase1 = yRet2;
+            ctx.fillRect(xBase1, yBase1, P_px, H_px);
+            ctx.strokeRect(xBase1, yBase1, P_px, H_px);
+
+            const xBase2 = xRet2 + L_px;
+            const yBase2 = yRet2;
+            ctx.fillRect(xBase2, yBase2, P_px, H_px);
+            ctx.strokeRect(xBase2, yBase2, P_px, H_px);
+
+            // --- 7. Adicionar Rótulos e Setas ---
+
+            // Seta para Largura (16 m)
+            desenharSetaComTexto(ctx, xRet1, yRet1-10, xRet1+L_px, yRet1-10, `${d.width} m`, 'acima');
+            desenharSetaComTexto(ctx, xBase1-10, yBase1, xBase1-10, yBase1+H_px, `${d.height} m`, 'esquerda');
+            desenharSetaComTexto(ctx, xBase1, yBase1+H_px+10, xBase1+P_px, yBase1+H_px+10, `${d.depth} m`, 'abaixo');
+        }
+
+
         function renderShape(contract) {
             const container = document.getElementById('shape-container');
             container.innerHTML = '';
-            // CORREÇÃO: Usar min-height em vez de height para permitir que o contêiner cresça
-            container.style.cssText = 'margin: auto; display: flex; align-items: center; justify-content: center; min-height: 210px;';
+            container.style.cssText = 'margin: auto; display: flex; align-items: center; justify-content: center; min-height: 210px; padding: 20px 0;';
 
             const d = contract.details;
             switch (d.shape) {
@@ -285,7 +374,6 @@
                     container.innerHTML = `<div class="bg-green-400 rounded-full" style="width: ${d.radius * 20}px; height: ${d.radius * 20}px;"></div>`;
                     break;
                 case 'l-shape':
-                    // CORREÇÃO: Usar um layout flexível para empilhar as partes da forma em L
                     container.style.alignItems = 'flex-start';
                     container.innerHTML = `
                         <div>
@@ -295,15 +383,7 @@
                     `;
                     break;
                 case 'prism':
-                     container.innerHTML = `
-                        <div class="prism-net" style="width: 180px;">
-                            <div class="face top" style="width: ${d.width * 5}px; height: ${d.depth * 5}px;"></div>
-                            <div class="face left" style="width: ${d.depth * 5}px; height: ${d.height * 5}px;"></div>
-                            <div class="face front" style="width: ${d.width * 5}px; height: ${d.height * 5}px;"></div>
-                            <div class="face right" style="width: ${d.depth * 5}px; height: ${d.height * 5}px;"></div>
-                            <div class="face bottom" style="width: ${d.width * 5}px; height: ${d.depth * 5}px;"></div>
-                        </div>
-                    `;
+                    renderPrismOnCanvas(d);
                     break;
             }
         }
@@ -387,9 +467,9 @@
                     contractDetails.h2 = generateRandomValue(6, 10);
                     break;
                 case 'prism':
-                    contractDetails.width = generateRandomValue(8, 12);
-                    contractDetails.height = generateRandomValue(4, 8);
-                    contractDetails.depth = generateRandomValue(3, 6);
+                    contractDetails.width = generateRandomValue(12, 18);
+                    contractDetails.height = generateRandomValue(6, 10);
+                    contractDetails.depth = generateRandomValue(3, 5);
                     break;
             }
 
@@ -412,7 +492,7 @@
                 case 'circle': dimensionsText = `Raio: ${d.radius}m. Use Pi = 3.14 e arredonde.`; break;
                 case 'l-shape': dimensionsText = `Forma L: [${d.w1}x${d.h1}] e [${d.w2}x${d.h2}]`; break;
                 case 'prism': 
-                    dimensionsText = `L:${d.width}, A:${d.height}, P:${d.depth}.`;
+                    dimensionsText = ``; // Removido pois agora está na imagem
                     areaLabelText = 'Calcule a área de SUPERFÍCIE (m²):';
                     break;
             }
@@ -451,7 +531,12 @@
                 case 'triangle': return (d.base * d.height) / 2;
                 case 'circle': return Math.round(3.14 * d.radius * d.radius);
                 case 'l-shape': return (d.w1 * d.h1) + (d.w2 * d.h2);
-                case 'prism': return 2 * (d.width * d.depth + d.height * d.depth + d.width * d.height);
+                case 'prism':
+                    // MUDANÇA: Adicionados comentários para explicar a fórmula
+                    // A fórmula da área de superfície de um prisma retangular é a soma da área de suas 6 faces.
+                    const bases = 2 * (d.depth * d.height);
+                    const retangulos = 4 * (d.width * d.height);
+                    return bases + retangulos;
                 default: return 0;
             }
         }

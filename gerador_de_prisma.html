@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificação de Prisma Retangular</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid #333;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Planificação de Prisma Retangular</h1>
+    <p>Script que desenha a planificação de um prisma com as dimensões especificadas.</p>
+    <canvas id="prismaCanvas" width="450" height="400"></canvas>
+
+    <script>
+        // --- 1. Configuração Inicial ---
+        const canvas = document.getElementById('prismaCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- 2. Parâmetros do Prisma (em metros) ---
+        const largura = 16;       // Corresponde ao comprimento do prisma
+        const altura = 8;         // Corresponde à altura do prisma
+        const profundidade = 4;   // Corresponde à largura/profundidade do prisma
+
+        // --- 3. Parâmetros do Desenho ---
+        const escala = 6; // pixels por metro
+        const corPreenchimento = '#a0e0f0'; // Azul claro da imagem
+        const corLinha = '#000000';
+        const corSeta = '#d35400'; // Laranja para destaque
+        const deslocamentoX = 60;
+        const deslocamentoY = 50;
+
+        // --- 4. Dimensões Convertidas para Pixels ---
+        const L_px = largura * escala;
+        const H_px = altura * escala;
+        const P_px = profundidade * escala;
+
+        // --- 5. Função para Desenhar Setas com Rótulos ---
+        /**
+         * Desenha uma linha com setas nas duas pontas e um rótulo.
+         * @param {CanvasRenderingContext2D} ctx - O contexto do canvas.
+         * @param {number} x1 - Posição X inicial.
+         * @param {number} y1 - Posição Y inicial.
+         * @param {number} x2 - Posição X final.
+         * @param {number} y2 - Posição Y final.
+         * @param {string} texto - O rótulo a ser exibido.
+         * @param {string} posicaoTexto - 'acima', 'abaixo', 'esquerda', 'direita'.
+         */
+        function desenharSetaComTexto(ctx, x1, y1, x2, y2, texto, posicaoTexto) {
+            const tamPonta = 8; // Tamanho da ponta da seta
+            const angulo = Math.atan2(y2 - y1, x2 - x1);
+
+            ctx.save(); // Salva o estado atual do contexto
+            ctx.strokeStyle = corSeta;
+            ctx.fillStyle = corSeta;
+            ctx.lineWidth = 1.5;
+
+            // Linha principal da seta
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            // Ponta da seta no início
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + tamPonta * Math.cos(angulo + Math.PI / 6), y1 + tamPonta * Math.sin(angulo + Math.PI / 6));
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 + tamPonta * Math.cos(angulo - Math.PI / 6), y1 + tamPonta * Math.sin(angulo - Math.PI / 6));
+            ctx.stroke();
+
+            // Ponta da seta no fim
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - tamPonta * Math.cos(angulo - Math.PI / 6), y2 - tamPonta * Math.sin(angulo - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - tamPonta * Math.cos(angulo + Math.PI / 6), y2 - tamPonta * Math.sin(angulo + Math.PI / 6));
+            ctx.stroke();
+
+            // Desenhar o texto
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let xTexto = (x1 + x2) / 2;
+            let yTexto = (y1 + y2) / 2;
+            const espaco = 15;
+
+            if (posicaoTexto === 'acima') yTexto -= espaco;
+            if (posicaoTexto === 'abaixo') yTexto += espaco;
+            if (posicaoTexto === 'esquerda') xTexto -= ctx.measureText(texto).width / 2 + espaco;
+            if (posicaoTexto === 'direita') xTexto += ctx.measureText(texto).width / 2 + 5 + espaco;
+            
+            ctx.fillText(texto, xTexto, yTexto);
+
+            ctx.restore(); // Restaura o estado anterior do contexto
+        }
+
+        // --- 6. Desenho da Planificação do Prisma ---
+        ctx.strokeStyle = corLinha;
+        ctx.fillStyle = corPreenchimento;
+        ctx.lineWidth = 2;
+        
+        // Posições calculadas para a planificação no layout em cruz
+        const xRet1 = deslocamentoX+L_px;
+        const yRet1 = deslocamentoY;
+        ctx.fillRect(xRet1, yRet1, L_px, H_px);
+        ctx.strokeRect(xRet1, yRet1, L_px, H_px);
+
+        const xRet2 = xRet1;
+        const yRet2 = yRet1 + H_px;
+        ctx.fillRect(xRet2, yRet2, L_px, H_px);
+        ctx.strokeRect(xRet2, yRet2, L_px, H_px);
+
+        const xRet3 = xRet1;
+        const yRet3 = yRet2 + H_px;
+        ctx.fillRect(xRet3, yRet3, L_px, H_px);
+        ctx.strokeRect(xRet3, yRet3, L_px, H_px);
+
+        const xRet4 = xRet1;
+        const yRet4 = yRet3 + H_px;
+        ctx.fillRect(xRet4, yRet4, L_px, H_px);
+        ctx.strokeRect(xRet4, yRet4, L_px, H_px);
+
+        const xBase1 = xRet2 - P_px;
+        const yBase1 = yRet2;
+        ctx.fillRect(xBase1, yBase1, P_px, H_px);
+        ctx.strokeRect(xBase1, yBase1, P_px, H_px);
+
+        const xBase2 = xRet2 + L_px;
+        const yBase2 = yRet2;
+        ctx.fillRect(xBase2, yBase2, P_px, H_px);
+        ctx.strokeRect(xBase2, yBase2, P_px, H_px);
+
+        // --- 7. Adicionar Rótulos e Setas ---
+
+        // Seta para Largura (16 m)
+        desenharSetaComTexto(ctx, xRet1, yRet1-10, xRet1+L_px, yRet1-10, `${largura} m`, 'acima');
+        desenharSetaComTexto(ctx, xBase1-10, yBase1, xBase1-10, yBase1+H_px, `${altura} m`, 'esquerda');
+        desenharSetaComTexto(ctx, xBase1, yBase1+H_px+10, xBase1+P_px, yBase1+H_px+10, `${largura} m`, 'abaixo');
+        
+        
+        
+        
+
+    </script>
+
+</body>
+</html>
